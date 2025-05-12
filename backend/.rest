@@ -1,0 +1,156 @@
+
+# Login
+###
+POST http://localhost:5000/webKp/auth/login
+Content-Type: application/json
+
+{
+    "username":"patricia231",
+    "password":"123"
+}
+
+
+###
+POST http://localhost:5000/webKp/auth/login
+Content-Type: application/json
+
+{
+    "username":"leader_1",
+    "password":"123456"
+}
+
+###
+POST http://localhost:5000/webKp/auth/login
+Content-Type: application/json
+
+{
+    "username":"agent_2",
+    "password":"123"
+}
+
+
+
+# Get Data All UsER
+###
+GET http://localhost:5000/webKp/user/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1LTAwODAtNDc0Ni1hODNmLTkxYjNmMDNkNGJlNiIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDQxODM1OTl9.e_FZRM9573rDCyOEecMexUdmQVbVC63US3nMVkxaaHQ
+
+
+# Get user by id
+###
+GET http://localhost:5000/user/19bc149c-29dc-41d7-ae22-0c5ac95d3e53
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIzM2Y0ZmNjLTNhMzItNDlkMy04Mzc2LTRjNTRiZWNkNDAwZCIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDM5MjAzOTh9.wW20X80h7c6Zf6EhKWWTwXji9ThtgPbRDPj_oRHri1A
+
+
+
+# Create new user
+
+###
+POST http://localhost:5000/webKp/user/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1LTAwODAtNDc0Ni1hODNmLTkxYjNmMDNkNGJlNiIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDQwOTQ5MTF9.2ULh5wJzyARdquwxBY1vkeuAKZtVRJ_V2iDyQQOauQY
+Content-Type: application/json
+
+{
+    "name":"agent 2",
+    "username":"agent_2",
+    "password":"123",
+    "role":"agent"
+}
+
+
+# Update user
+###
+PUT  http://localhost:5000/user/654c266a-f58a-41c0-8686-b150342f3675
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIzM2Y0ZmNjLTNhMzItNDlkMy04Mzc2LTRjNTRiZWNkNDAwZCIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDM5MjAzOTh9.wW20X80h7c6Zf6EhKWWTwXji9ThtgPbRDPj_oRHri1A
+Content-Type: application/json
+
+{
+    "name":"rendani",
+    "username":"leader_1",
+    "password":"123",
+    "role":"leader"
+}
+
+
+# Bukan leader yang update
+###
+PUT  http://localhost:5000/user/654c266a-f58a-41c0-8686-b150342f3675
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NGMyNjZhLWY1OGEtNDFjMC04Njg2LWIxNTAzNDJmMzY3NSIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQzOTIxMTk5fQ.j8xwLM5fZzk57FtFdwTgL-fLYvAPLVnljGYt9N8tWVw
+Content-Type: application/json
+
+{
+    "name":"patricia silaban",
+    "username":"patricia231",
+    "password":"123",
+    "role":"team_fu"
+}
+
+
+
+# Delete data
+###
+DELETE http://localhost:5000/user/b33f4fcc-3a32-49d3-8376-4c54becd400d
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIzM2Y0ZmNjLTNhMzItNDlkMy04Mzc2LTRjNTRiZWNkNDAwZCIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDM5MjAzOTh9.wW20X80h7c6Zf6EhKWWTwXji9ThtgPbRDPj_oRHri1A
+
+
+
+# KOMPLAIN
+
+# Create New Komplain
+###
+POST http://localhost:5000/webKp/komplain/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA5NDk1MH0.bJPn0X77UR8nnOBWiS6nP1jALX-0RiSP0X_qmg00o_A
+Content-Type: application/json
+
+{
+    "msisdn":"08764532134",
+    "title":"Komplain Contoh 2",
+    "description":"Kartu tidak mendapatkan jaringan yang benar, jaringan selalu hilang",
+    "priority":"medium"
+}
+
+# create komlpain tapi kita team_fu
+###
+POST http://localhost:5000/komplain/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NGMyNjZhLWY1OGEtNDFjMC04Njg2LWIxNTAzNDJmMzY3NSIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQzOTMwNDA0fQ.N8QtVxI8UHoW4ZM7O2J7XnqAypXUY-YXmzqe_TiOsCI
+Content-Type: application/json
+
+{
+    "msisdn":"08764532112",
+    "title":"Kesalahan Jaringan",
+    "description":"Kartu tidak mendapatkan jaringan yang benar, jaringan selalu hilang",
+    "priority":"medium"
+}
+
+
+# get All Complain
+###
+GET http://localhost:5000/webKp/komplain/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NGMyNjZhLWY1OGEtNDFjMC04Njg2LWIxNTAzNDJmMzY3NSIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQzOTMwNDA0fQ.N8QtVxI8UHoW4ZM7O2J7XnqAypXUY-YXmzqe_TiOsCI
+
+
+# Follow Up
+###
+PATCH  http://localhost:5000/komplain/e1a2ece2-5c02-4fe9-920b-968dba6ec22b/followUp
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NGMyNjZhLWY1OGEtNDFjMC04Njg2LWIxNTAzNDJmMzY3NSIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQzOTMxMTY5fQ.h6DwH3KLRJH5Sf2oux2xME4T5S61vMFjWCGTNBhBVWQ
+Content-Type: application/json
+
+{
+    "status":"completed",
+    "catatan":"Proses Selesai"
+}
+
+
+###
+GET http://localhost:5000/komplain/export/csv
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1LTAwODAtNDc0Ni1hODNmLTkxYjNmMDNkNGJlNiIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDM5MzE3MzN9.rRYrbwG1eqtFISW_DP3BQFQlEl0xAbwmbgTsGugk5Jo
+
+
+# Get komplan by Id
+###
+GET http://localhost:5000/webKp/komplain/19bc149c-29dc-41d7-ae22-0c5ac95d3e53
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljLTI5ZGMtNDFkNy1hZTIyLTBjNWFjOTVkM2U1MyIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA4OTY0NH0.3XkCDpp38kzoY95ruHGrfvozU-UXW-XqQ0t4IG64zVI
+
+###
+GET http://localhost:5000/webKp/komplain/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA5NDk1MH0.bJPn0X77UR8nnOBWiS6nP1jALX-0RiSP0X_qmg00o_A
