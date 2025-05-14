@@ -24,9 +24,10 @@ import { FollowUpData } from "./components/menu/team_fu/FollowUpData.jsx";
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
       {/* Login route tanpa layout */}
       <Route
-        path="/"
+        path="/login"
         element={
           localStorage.getItem("token") && localStorage.getItem("role") ? (
             <Navigate

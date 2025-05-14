@@ -16,7 +16,7 @@ import { logOut, getRole, getUser } from "../../auth/authService";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
-export const Sidebar = () => {
+export const Sidebar = ({ toggleSidebar, sidebarOpen }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -114,7 +114,7 @@ export const Sidebar = () => {
           showConfirmButton: false,
           timer: 1500,
         });
-        navigate("/");
+        navigate("/login");
       }
     });
   };
@@ -123,109 +123,6 @@ export const Sidebar = () => {
   const currentMenuItems = userRole ? menuItems[userRole] || [] : [];
 
   return (
-    // <div className="flex h-screen bg-gray-100">
-    //   {/* Mobile */}
-    //   {isMobile && (
-    //     <div
-    //       className="fixed inset-0 z-40 bg-gray-800 bg-opacity-50 transition-opacity duration-300"
-    //       style={{ display: isOpen ? "block" : "none" }}
-    //       onClick={() => setIsOpen(false)}
-    //     ></div>
-    //   )}
-    //   {/* SIDE BAR */}
-    //   <div
-    //     className={`${
-    //       isMobile ? "fixed z-50" : "relative"
-    //     } bg-white shadow-lg transition-all duration-300 ${
-    //       isCollapsed && !isOpen ? "w-16" : "w-64"
-    //     }`}
-    //     style={{ left: isMobile && !isOpen ? "-100%" : "0", height: "100%" }}
-    //   >
-    //     {/* Logo dan toogle button container */}
-    //     <div className="flex items-center justify-between p-4 border-b border-gray-200">
-    //       <div className="flex items-center">
-    //         {/* Logo */}
-    //         <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center">
-    //           <span className="text-white font-bold">SK</span>
-    //         </div>
-    //         {(!isCollapsed || isOpen) && (
-    //           <span className="ml-3 text=xl font-semibold text-red-700">
-    //             Sistem Komplain
-    //           </span>
-    //         )}
-    //       </div>
-    //       {/* toogle button */}
-    //       <button
-    //         onClick={toogleSideBar}
-    //         className="text-gray-500 hover:text-600 focus:outline-none"
-    //       >
-    //         {isMobile ? (
-    //           isOpen ? (
-    //             <X size={20} />
-    //           ) : (
-    //             <Menu size={20} />
-    //           )
-    //         ) : isCollapsed ? (
-    //           <ChevronRight size={20} />
-    //         ) : (
-    //           <ChevronLeft size={20} />
-    //         )}
-    //       </button>
-    //     </div>
-
-    //     {/* Menu Item */}
-    //     <div className="py-4 overflow-y-auto">
-    //       <ul className="space-y-2 px-3">
-    //         {currentMenuItems.map((item, index) => (
-    //           <li key={index}>
-    //             <Link
-    //               to={item.path}
-    //               className={`flex items-center p-2 rounded-lg ${
-    //                 location.pathname === item.path
-    //                   ? "bg-red-100 text-red-600"
-    //                   : "text-gray-600 hover:bg-red-50 hover:text-red-600"
-    //               } transition-colors duration-200`}
-    //             >
-    //               <div className="flex items-center justify-center">
-    //                 {item.icon}
-    //               </div>
-    //               {(!isCollapsed || isOpen) && (
-    //                 <span className="ml-3">{item.title}</span>
-    //               )}
-    //             </Link>
-    //           </li>
-    //         ))}
-    //       </ul>
-    //     </div>
-    //     {/* Profile */}
-    //     <div className="p-4 border-t border-gray-200">
-    //       <div className="flex items-center space-x-3">
-    //         <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold">
-    //           <User size={20} />
-    //         </div>
-    //         {(!isCollapsed || isOpen) && (
-    //           <div>
-    //             <p className="text-sm font-semibold text-gray-700">
-    //               {user?.name}
-    //             </p>
-    //             <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
-    //           </div>
-    //         )}
-    //       </div>
-    //     </div>
-
-    //     {/* Logout */}
-    //     <div className="absolute bottom-0 w-full border-t border-gray-200 p-4">
-    //       <button
-    //         onClick={handleLogout}
-    //         className={`flex items-center p-2 w-full rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors duration-200`}
-    //       >
-    //         <LogOut size={20} />
-    //         {(!isCollapsed || isOpen) && <span className="ml-3">Logout</span>}
-    //       </button>
-    //     </div>
-    //   </div>
-    // </div>
     <div className="flex h-screen bg-gray-100">
       {/* Mobile overlay */}
       {isMobile && (
@@ -250,14 +147,13 @@ export const Sidebar = () => {
           {/* Logo & Toggle */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center">
-                <span className="text-white font-bold">SK</span>
-              </div>
-              {(!isCollapsed || isOpen) && (
-                <span className="ml-3 text=xl font-semibold text-red-700">
-                  Sistem Komplain
-                </span>
-              )}
+              <span className="ml-3 text=xl font-semibold text-red-700">
+                <img
+                  src="../../../public/assets/img/logo.png"
+                  alt=""
+                  width={100}
+                />
+              </span>
             </div>
             <button
               onClick={toogleSideBar}
@@ -279,7 +175,7 @@ export const Sidebar = () => {
 
           {/* Menu Items */}
           <div className="py-4 overflow-y-auto">
-            <ul className="space-y-2 px-3">
+            <ul className="space-y-2 px-2">
               {currentMenuItems.map((item, index) => (
                 <li key={index}>
                   <Link
