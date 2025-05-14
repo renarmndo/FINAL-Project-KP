@@ -28,6 +28,15 @@ Content-Type: application/json
     "password":"123"
 }
 
+###
+POST http://localhost:5000/webKp/auth/login
+Content-Type: application/json
+
+{
+    "username":"rendani23",
+    "password":"123"
+}
+
 
 
 # Get Data All UsER
@@ -154,3 +163,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljL
 ###
 GET http://localhost:5000/webKp/komplain/me
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA5NDk1MH0.bJPn0X77UR8nnOBWiS6nP1jALX-0RiSP0X_qmg00o_A
+
+
+
+
+# TEAM FU TESTER
+
+###
+GET http://localhost:5000/webKp/teamfu/komplain
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljLTI5ZGMtNDFkNy1hZTIyLTBjNWFjOTVkM2U1MyIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQ3MDMyNTEyfQ.1I8vh_rZqTg-ImmkpiQsyibOeD35VtHdUhDielDaets
