@@ -8,36 +8,28 @@ import {
   Bell,
   User,
   ChevronDown,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
-import { API_URL, getUser } from "../../auth/authService";
+import { getUser } from "../../auth/authService";
 import { getMyComplain } from "../../service/getMyComplain";
-import axios from "axios";
-import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import TambahDataKomplain from "./agent/tambahDataKomplain";
 
 export const ComplaintDashboard = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [komplain, setKomplain] = useState([]);
-  const [titleOptions, setTitleOptions] = useState([
-    "Kesalahan Jaringan",
-    "Pulsa Tidak Masuk",
-    "Internet Lambat",
-    "SMS Tidak Terkirim",
-    "Tagihan Tidak Sesuai",
-  ]);
-
-  const [formData, setFormData] = useState({
-    msisdn: "",
-    title: "",
-    description: "",
-    priorty: "low",
-  });
-
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [komplainList, setKomplainList] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const user = getUser();
+
+  // handle popup
+  const handleTambahKomplain = (komplainBaru) => {
+    setKomplainList((prev) => [...prev, komplainBaru]);
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -64,72 +56,6 @@ export const ComplaintDashboard = () => {
     fetchDataKomplain();
   }, []);
 
-  const togglePopup = () => {
-    setIsPopupOpen(!isPopupOpen);
-    if (!isPopupOpen) {
-      setFormData({
-        msisdn: "",
-        title: "",
-        description: "",
-      });
-    }
-  };
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSelectTitle = (title) => {
-    setFormData({
-      ...formData,
-      title,
-    });
-    setIsSelectOpen(false);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // ⬅️ Wajib untuk mencegah URL berubah!
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(`${API_URL}/komplain`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      Swal.fire({
-        icon: "success",
-        title: "Berhasil",
-        text: "Komplain Berhasil Terkirim",
-        timer: 1500,
-        showConfirmButton: false, // ✅ boolean, bukan string
-        timerProgressBar: true, // opsional biar ada bar countdown
-      });
-
-      // ⬇ Tambahkan data komplain baru ke list (biar gak perlu refresh)
-      setKomplain((prev) => [...prev, response.data.data]);
-      setIsPopupOpen(false);
-
-      setFormData({
-        msisdn: "",
-        title: "",
-        description: "",
-        priorty: "low",
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Gagal!",
-        text: "Terjadi Kesalahan saat mengirim komplain",
-        confirmButtonColor: "#d33",
-      });
-      console.log(error);
-    }
-  };
-
   const getStatusColor = (status) => {
     if (!status) return "text-gray-400"; // fallback default
     const s = status.toLowerCase();
@@ -139,7 +65,7 @@ export const ComplaintDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 p-4">
+    <div className="w-full flex h-screen bg-gray-50 p-4">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
@@ -188,12 +114,6 @@ export const ComplaintDashboard = () => {
                   size={18}
                 />
               </div>
-              <button
-                onClick={togglePopup}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center justify-center"
-              >
-                <span>Tambah Komplain</span>
-              </button>
             </div>
           </div>
 
@@ -204,19 +124,22 @@ export const ComplaintDashboard = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="w1/6 px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      MSISDN
+                      No Indihome
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Judul
+                      Nama Pelanggan
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Deskripsi
+                      No Telepon
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Status
+                      Email Pelanggan
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Tanggal
+                      Alamat Pelanggan
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -242,11 +165,31 @@ export const ComplaintDashboard = () => {
                               item.status
                             )}`}
                           >
-                            {item.status}
+                            {item.status === "pending"
+                              ? "Belum Dikerjakan"
+                              : item.status === "completed"
+                              ? "Sudah di-respons"
+                              : "Status Belum Diverifikasi"}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {formatDate(item.createdAt)}
+                        </td>
+                        <td className="px-4 py-4 break-words text-sm">
+                          <div className="flex gap-2">
+                            <button>
+                              <Pencil
+                                size={15}
+                                className="text-blue-500 cursor-pointer"
+                              />
+                            </button>
+                            <button>
+                              <Trash2
+                                size={15}
+                                className="text-red-500 cursor-pointer"
+                              />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -268,104 +211,11 @@ export const ComplaintDashboard = () => {
       </div>
 
       {/* Add Complaint Popup */}
-      {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md shadow-xl p-6 relative">
-            <button
-              onClick={togglePopup}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
-              <X size={20} />
-            </button>
-
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Tambah Komplain Baru
-            </h2>
-
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  MSISDN (Nomor Telepon)
-                </label>
-                <input
-                  type="number"
-                  name="msisdn"
-                  placeholder="e.g. 08764532112"
-                  value={formData.msisdn}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Judul Komplain
-                </label>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsSelectOpen(!isSelectOpen)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    {formData.title || "Pilih judul komplain"}
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform ${
-                        isSelectOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-
-                  {isSelectOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10">
-                      {titleOptions.map((title, index) => (
-                        <div
-                          key={index}
-                          onClick={() => handleSelectTitle(title)}
-                          className="px-3 py-2 hover:bg-red-50 cursor-pointer"
-                        >
-                          {title}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Deskripsi
-                </label>
-                <textarea
-                  name="description"
-                  placeholder="Jelaskan detail permasalahan..."
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows="4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
-                ></textarea>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={togglePopup}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  Simpan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {isModalOpen && (
+        <TambahDataKomplain
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleTambahKomplain}
+        />
       )}
     </div>
   );

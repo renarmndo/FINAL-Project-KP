@@ -3,6 +3,7 @@ import Komplain from "../models/Komplain.model";
 import { Op } from "sequelize";
 import { Parser } from "json2csv";
 import User from "../models/User.model";
+import Layanan from "../models/Layanan.models";
 
 // gET aLL Complains
 export const getAllComplains: any = async (req: Request, res: Response) => {
@@ -48,7 +49,7 @@ export const getAllComplains: any = async (req: Request, res: Response) => {
       where,
       include: [
         { model: User, as: "Agent", attributes: ["id", "name", "username"] },
-        { model: User, as: "Handler", attributes: ["id", "name", "username"] },
+        { model: User, as: "handler", attributes: ["id", "name", "username"] },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -122,21 +123,62 @@ export const getComplainById: any = async (req: Request, res: Response) => {
   }
 };
 
-// create new komplain
 export const createKomplain: any = async (req: Request, res: Response) => {
   try {
-    const { msisdn, title, description, priority } = req.body;
-    const komplain = await Komplain.create({
-      msisdn,
-      title,
-      description,
-      priority: priority || "medium",
-      status: "pending",
-      agentId: req.user.id,
-      handlerId: req.user.id,
+    const {
+      nomor_Indihome,
+      nama_Pelanggan,
+      noTlp_Pelanggan,
+      email_Pelanggan,
+      alamat_Pelanggan,
+      layananId,
+      priority,
+    } = req.body;
+
+    const agentId = req.user.id;
+
+    // validasi data wajib
+
+    if (
+      !nomor_Indihome ||
+      !nama_Pelanggan ||
+      !noTlp_Pelanggan ||
+      !email_Pelanggan ||
+      !alamat_Pelanggan ||
+      !layananId ||
+      !priority ||
+      !agentId
+    ) {
+      return res.status(400).json({ message: "Semua Data wajib diisi" });
+    }
+
+    const existingMsisdn = await Komplain.findOne({
+      where: {
+        nomor_Indihome,
+      },
     });
-    res.status(201).json({
-      msg: "Berhasil Menambahkan Komplain",
+
+    if (existingMsisdn) {
+      return res.status(400).json({
+        msg: "Nomor indihome Sudah terdaftar",
+      });
+    }
+
+    // simpan komplain
+    const komplain = await Komplain.create({
+      nomor_Indihome,
+      nama_Pelanggan,
+      noTlp_Pelanggan,
+      email_Pelanggan,
+      alamat_Pelanggan,
+      layananId,
+      agentId,
+      priority: "medium",
+      status: "pending",
+      data: {},
+    });
+    return res.status(201).json({
+      message: "Komplain berhasil dibuat",
       data: komplain,
     });
   } catch (error) {
@@ -218,82 +260,82 @@ export const updateKomplain: any = async (req: Request, res: Response) => {
 };
 
 // export komplain to csv
-export const exportKomplainToCsv: any = async (req: Request, res: Response) => {
-  try {
-    const { startDate, endDate, status } = req.query;
-    let where: any = {};
+// export const exportKomplainToCsv: any = async (req: Request, res: Response) => {
+//   try {
+//     const { startDate, endDate, status } = req.query;
+//     let where: any = {};
 
-    //   Apply filters
-    if (status) where.status = status;
+//     //   Apply filters
+//     if (status) where.status = status;
 
-    //   date filters
-    if (startDate && endDate) {
-      where.createdAt = {
-        [Op.between]: [
-          new Date(startDate as string),
-          new Date(endDate as string),
-        ],
-      };
-    } else if (startDate) {
-      where.createdAt = { [Op.gte]: new Date(startDate as string) };
-    } else if (endDate) {
-      where.createdAt = { [Op.lte]: new Date(endDate as string) };
-    }
+//     //   date filters
+//     if (startDate && endDate) {
+//       where.createdAt = {
+//         [Op.between]: [
+//           new Date(startDate as string),
+//           new Date(endDate as string),
+//         ],
+//       };
+//     } else if (startDate) {
+//       where.createdAt = { [Op.gte]: new Date(startDate as string) };
+//     } else if (endDate) {
+//       where.createdAt = { [Op.lte]: new Date(endDate as string) };
+//     }
 
-    const komplain = await Komplain.findAll({
-      where,
-      include: [
-        { model: User, as: "Agent", attributes: ["name"] },
-        { model: User, as: "Handler", attributes: ["name"] },
-      ],
-      raw: true,
-      nest: true,
-    });
+//     const komplain = await Komplain.findAll({
+//       where,
+//       include: [
+//         { model: User, as: "Agent", attributes: ["name"] },
+//         { model: User, as: "Handler", attributes: ["name"] },
+//       ],
+//       raw: true,
+//       nest: true,
+//     });
 
-    //   transform komplain to csv
-    const formattedData: any = komplain.map((item) => ({
-      id: item.id,
-      msisdn: item.msisdn,
-      title: item.title,
-      description: item.description,
-      priority: item.priority,
-      status: item.status,
-      submittedBy: item.agentId,
-      handlerBy: item.handlerId,
-      createdAt: new Date(item.createdAt ?? "").toLocaleString(),
-      updatedAt: new Date(item.updatedAt ?? "").toLocaleString(),
-    }));
+//     //   transform komplain to csv
+//     const formattedData: any = komplain.map((item) => ({
+//       id: item.id,
+//       msisdn: item.msisdn,
+//       title: item.title,
+//       description: item.description,
+//       priority: item.priority,
+//       status: item.status,
+//       submittedBy: item.agentId,
+//       handlerBy: item.handlerId,
+//       createdAt: new Date(item.createdAt ?? "").toLocaleString(),
+//       updatedAt: new Date(item.updatedAt ?? "").toLocaleString(),
+//     }));
 
-    //   Configure the csv parser
-    const json2csvParser = new Parser({
-      fields: [
-        { label: "ID", value: "id" },
-        { label: "Msisdn", value: "msisdn" },
-        { label: "Title", value: "title" },
-        { label: "Description", value: "description" },
-        { label: "Priority", value: "priority" },
-        { label: "Status", value: "status" },
-        { label: "Submitted By", value: "submittedBy" },
-        { label: "Handled By", value: "handledBy" },
-        { label: "Created At", value: "createdAt" },
-        { label: "Updated At", value: "updatedAt" },
-      ],
-    });
-    const csv = json2csvParser.parse(formattedData);
+//     //   Configure the csv parser
+//     const json2csvParser = new Parser({
+//       fields: [
+//         { label: "ID", value: "id" },
+//         { label: "Msisdn", value: "msisdn" },
+//         { label: "Title", value: "title" },
+//         { label: "Description", value: "description" },
+//         { label: "Priority", value: "priority" },
+//         { label: "Status", value: "status" },
+//         { label: "Submitted By", value: "submittedBy" },
+//         { label: "Handled By", value: "handledBy" },
+//         { label: "Created At", value: "createdAt" },
+//         { label: "Updated At", value: "updatedAt" },
+//       ],
+//     });
+//     const csv = json2csvParser.parse(formattedData);
 
-    //   set hedaers for file download
-    res.header("Content-Type", "text/cvs");
-    res.attachment(
-      `komplain-report-${new Date().toISOString().split("T")[0]}.csv`
-    );
-    res.status(200).json(csv);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Server Error",
-    });
-  }
-};
+//     //   set hedaers for file download
+//     res.header("Content-Type", "text/cvs");
+//     res.attachment(
+//       `komplain-report-${new Date().toISOString().split("T")[0]}.csv`
+//     );
+//     res.status(200).json(csv);
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({
+//       msg: "Server Error",
+//     });
+//   }
+// };
 
 // Get Komplain By Agent
 export const getMyKomplain: any = async (req: Request, res: Response) => {
@@ -369,6 +411,26 @@ export const getMyKomplain: any = async (req: Request, res: Response) => {
     return res.status(500).json({
       msg: "Terjadi kesalahan pada server",
       error: error,
+    });
+  }
+};
+
+// get layanan input leader
+export const getLayanan: any = async (req: Request, res: Response) => {
+  try {
+    const layananList = await Layanan.findAll({
+      attributes: ["id", "nama_layanan", "deskripsi_layanan"], // field yang ingin diambil
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: layananList,
+    });
+  } catch (error) {
+    console.error("Error fetching layanan:", error);
+    return res.status(500).json({
+      status: "error",
+      msg: "Gagal mengambil data layanan",
     });
   }
 };

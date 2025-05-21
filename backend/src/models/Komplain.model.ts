@@ -1,17 +1,22 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { v4 as uuidv4 } from "uuid";
 import User from "./User.model";
+import Layanan from "./Layanan.models";
 import { databaseConnection } from "../config/database.config";
 
 interface KomplainAtributes {
   id: string;
-  msisdn: string;
-  title: string;
-  description: string;
-  priority: "low" | "medium" | "high";
+  nomor_Indihome: string;
+  nama_Pelanggan: string;
+  noTlp_Pelanggan: string;
+  email_Pelanggan: string;
+  alamat_Pelanggan: string;
+  layananId: string;
+  data: Record<string, any>;
+  priority: "high" | "medium" | "low";
   status: "pending" | "processing" | "completed";
   agentId: string;
-  handlerId?: string;
+  handlerId?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -24,13 +29,18 @@ class Komplain
   implements KomplainAtributes
 {
   public id!: string;
-  public msisdn!: string;
-  public title!: string;
-  public description!: string;
-  public priority!: "low" | "medium" | "high";
+  public nomor_Indihome!: string;
+  public nama_Pelanggan!: string;
+  public noTlp_Pelanggan!: string;
+  public email_Pelanggan!: string;
+  public alamat_Pelanggan!: string;
+  public layananId!: string;
+  public data!: Record<string, any>;
+  public priority!: "high" | "medium" | "low";
   public status!: "pending" | "processing" | "completed";
+
   public agentId!: string;
-  public handlerId?: string;
+  public handlerId?: string | null;
 
   public readonly createdAt!: Date | undefined;
   public readonly updatedAt!: Date | undefined;
@@ -43,16 +53,36 @@ Komplain.init(
       defaultValue: () => uuidv4(),
       primaryKey: true,
     },
-    msisdn: {
+    nomor_Indihome: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    title: {
+    nama_Pelanggan: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    description: {
+    noTlp_Pelanggan: {
       type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    email_Pelanggan: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    alamat_Pelanggan: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    layananId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: "layanan",
+        key: "id",
+      },
+    },
+    data: {
+      type: DataTypes.JSON,
       allowNull: false,
     },
     priority: {
@@ -74,7 +104,7 @@ Komplain.init(
       },
     },
     handlerId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: true,
       references: {
         model: User,
@@ -94,6 +124,12 @@ Komplain.belongsTo(User, {
   foreignKey: "agentId",
   as: "Agent",
 });
+
+Komplain.belongsTo(Layanan, {
+  foreignKey: "layananId",
+  as: "layanan",
+});
+
 Komplain.belongsTo(User, {
   foreignKey: "handlerId",
   as: "Handler",
@@ -104,9 +140,9 @@ User.hasMany(Komplain, {
   as: "SubmittedKomplain",
 });
 
-User.hasMany(Komplain, {
-  foreignKey: "handlerId",
-  as: "HandlerKomplain",
+Layanan.hasMany(Komplain, {
+  foreignKey: "layananId",
+  as: "komplain",
 });
 
 export default Komplain;

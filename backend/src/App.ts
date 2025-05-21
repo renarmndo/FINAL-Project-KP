@@ -10,6 +10,7 @@ import AuthRoutes from "./routes/Auth.routes";
 import UserRoutes from "./routes/User.routes";
 import KomplainRoutes from "./routes/Komplain.routes";
 import TeamfuRoutes from "./routes/Teamfu.routes";
+import LeaderRoutes from "./routes/Leader.routes";
 // import User from "./models/User.model";
 // import bcrypt from "bcryptjs";
 
@@ -30,6 +31,7 @@ app.use("/webKp/auth", AuthRoutes);
 app.use("/webKp/user", UserRoutes);
 app.use("/webKp/komplain", KomplainRoutes);
 app.use("/webKp/teamfu", TeamfuRoutes);
+app.use("/webKp/leader", LeaderRoutes);
 
 app.listen(process.env.DB_PORT, () => {
   console.log(`Server Running in port ${process.env.DB_PORT}`);

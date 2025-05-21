@@ -49,7 +49,7 @@ export const RiwayatKomplain = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-lg">
+    <div className="w-full p-6 bg-white rounded-xl shadow-lg">
       <h1 className="text-2xl font-semibold mb-6">Riwayat Komplain </h1>
       {loading ? (
         <p className="text-gray-500">Memuat Data.....</p>
@@ -115,7 +115,7 @@ export const RiwayatKomplain = () => {
                         <td className="px-6 py-4 text-sm">
                           {formatDate(item.createdAt)}
                         </td>
-                        <td>{item.handlerId.name || "Team Fu"}</td>
+                        <td>{item.handlerId.name}</td>
                       </tr>
                     ))
                 ) : (

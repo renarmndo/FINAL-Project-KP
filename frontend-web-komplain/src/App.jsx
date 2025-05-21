@@ -8,14 +8,17 @@ import { LeaderDashboard } from "./components/dashboard/leader.Dashboard.jsx";
 import { MainLayout } from "./components/layout/MainLayout.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 
-// Menu Sidebar
+// Agent
 import { ComplaintDashboard } from "./components/menu/ComplaintDashboard.jsx";
 import { RiwayatKomplain } from "./components/menu/RiwayatKomplain.jsx";
+import TambahDaftarKomplain from "./components/menu/agent/tambahDataKomplain.jsx";
 
 // Leader Menu
 import { ListPengguna } from "./components/menu/Leader/ListPengguna.jsx";
 import { KomplainDashboard } from "./components/menu/Leader/KomplainDashboard.jsx";
 import { PengaturanDashboard } from "./components/menu/Leader/PengaturanDashboard.jsx";
+import { EkportDashboard } from "./components/menu/Leader/EkportDashboard.jsx";
+import { TambahLayanan } from "./components/menu/Leader/TambahLayanan.jsx";
 
 // Role Team_fu
 import { DaftarKomplain } from "./components/menu/team_fu/DaftarKomplain.jsx";
@@ -73,7 +76,7 @@ function App() {
           }
         />
 
-        {/* Menu Sidebar */}
+        {/* Agent */}
         <Route
           path="/dashboard/agent/new-komplain"
           element={
@@ -87,6 +90,14 @@ function App() {
           element={
             <ProtectedRoute requiredRole={"agent"}>
               <RiwayatKomplain />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/agent/buat-komplain"
+          element={
+            <ProtectedRoute requiredRole={"agent"}>
+              <TambahDaftarKomplain />
             </ProtectedRoute>
           }
         />
@@ -113,6 +124,22 @@ function App() {
           element={
             <ProtectedRoute>
               <PengaturanDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/leader/eksport-menu"
+          element={
+            <ProtectedRoute requiredRole={"leader"}>
+              <EkportDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/leader/layanan"
+          element={
+            <ProtectedRoute requiredRole={"leader"}>
+              <TambahLayanan />
             </ProtectedRoute>
           }
         />

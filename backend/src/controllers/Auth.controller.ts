@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User.model";
 import { generateToken } from "../utils/generateToken.Utils";
+import { containsInjectionPatterns } from "../security/sqlInjection";
 
 // Register
 export const register: any = async (req: Request, res: Response) => {
@@ -60,10 +61,49 @@ export const loginUser: any = async (req: Request, res: Response) => {
     const { username, password } = req.body;
     // console.log("request body:", req.body);
 
+    // handle error
+
+    // jika username dan password tidak ada
+    if (!username && !password) {
+      return res.status(400).json({
+        msg: "Username dan Password tidak boleh kosong",
+      });
+    }
+
+    if (!username) {
+      return res.status(400).json({
+        msg: "Username tidak boleh kosong",
+      });
+    }
+
+    if (!password) {
+      return res.status(400).json({
+        msg: "Password tidak boleh kosong",
+      });
+    }
+
+    // validasi user
+    const usernameRegex = /^[a-zA-Z0-9_]{4,30}$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({
+        msg: "Username tidak valid. Gunakan Hanya Huruf,Angka dan underscore (4-30 karakter)",
+      });
+    }
+
+    // validasi password tidak boleh kosong
+    if (containsInjectionPatterns(password)) {
+      return res.status(400).json({
+        msg: "Password yang anda masukkan mengandung karakter yang tidak diperbolehkan!",
+      });
+    }
+
+    //
+
     //   check for user
     const user = await User.findOne({
       where: { username },
     });
+
     if (!user) {
       return res.status(401).json({
         msg: "User Tidak Ditemukan atau Belum terdaftar",
@@ -89,7 +129,7 @@ export const loginUser: any = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    return res.status(400).json({
       msg: "Terjadi kesalahan Pada Server",
       error: error,
     });

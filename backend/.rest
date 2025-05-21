@@ -172,3 +172,27 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1L
 ###
 GET http://localhost:5000/webKp/teamfu/komplain
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljLTI5ZGMtNDFkNy1hZTIyLTBjNWFjOTVkM2U1MyIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQ3MDMyNTEyfQ.1I8vh_rZqTg-ImmkpiQsyibOeD35VtHdUhDielDaets
+
+# 
+###
+POST http://localhost:5000/webKp/teamfu/komplain/4432dea4-10c6-421f-9d4a-20fa063e8f2e/handler
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljLTI5ZGMtNDFkNy1hZTIyLTBjNWFjOTVkM2U1MyIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQ3NDc0MDY4fQ.MVHN-6_GbmG2iX5fAwbTS6NZPOaS6Ng_7N8kBPg8mYg
+Content-Type: application/json
+
+{
+    "jawaban":"Masalah Pulsa Tidak Masuk",
+    "catatanInternal":"Update via aplikasi Mobile"
+}
+
+
+
+# tambah field list
+
+###
+POST http://localhost:5000/webKp/leader/afb555bf-6f2f-4e2b-afe5-d307473d885d/create-field
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljLTI5ZGMtNDFkNy1hZTIyLTBjNWFjOTVkM2U1MyIsInJvbGUiOiJ0ZWFtX2Z1IiwiaWF0IjoxNzQ3NDc0MDY4fQ.MVHN-6_GbmG2iX5fAwbTS6NZPOaS6Ng_7N8kBPg8mYg
+
+
+###
+GET http://localhost:5000/webKp/komplain/layanan
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NzgxNTUxN30.rzXuz9hs7btXXHq6KQapM7x3Y8a8iTJqiqW_iFI1_IM

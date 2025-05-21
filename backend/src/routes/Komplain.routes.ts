@@ -5,7 +5,8 @@ import {
   getAllComplains,
   getComplainById,
   followUpKomplain,
-  exportKomplainToCsv,
+  getLayanan,
+  // exportKomplainToCsv,
   getMyKomplain,
 } from "../controllers/Komplain.controller";
 const router = express.Router();
@@ -20,6 +21,7 @@ router.get("/me", getMyKomplain);
 router.get("/:id", getComplainById);
 router.patch("/:id/followUp", authorized("team_fu"), followUpKomplain);
 router.post("/", authorized("agent"), createKomplain);
-router.get("/export/csv", authorized("leader"), exportKomplainToCsv);
+router.get("/layanan", authorized("agent"), getLayanan);
+// router.get("/export/csv", authorized("leader"), exportKomplainToCsv);
 
 export default router;

@@ -6,24 +6,19 @@ export const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="flex">
-      <div
-        className={`${
-          isSidebarOpen ? "w-64" : "w-20"
-        } h-screen fixed transition-all duration-300`}
-      >
-        <Sidebar
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          isOpen={isSidebarOpen}
-        />
-      </div>
+    <div
+      className={`h-screen bg-gray-100 grid ${
+        isSidebarOpen ? "grid-cols-[16rem_1fr]" : "grid-cols-[4rem_1fr]"
+      } transition-all duration-300 ease-in-out`}
+    >
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <div
-        className={`${
-          isSidebarOpen ? "ml-64" : "ml-20"
-        } flex-1 h-screen overflow-y-auto transition-all duration-300`}
-      >
-        <Outlet />
+      {/* Main Content */}
+      <div className="overflow-auto w-full bg-gray-100 min-w-0">
+        <div className="p-4 w-full">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

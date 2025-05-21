@@ -1,5 +1,6 @@
 import User from "./User.model";
 import Complaint from "./Komplain.model";
+import Respons from "./Response.model";
 import { databaseConnection, connectionDb } from "../config/database.config";
 
 const syncDatabase = async () => {
@@ -14,4 +15,4 @@ const syncDatabase = async () => {
   }
 };
 
-export { User, Complaint, syncDatabase };
+export { User, Complaint, Respons, syncDatabase };

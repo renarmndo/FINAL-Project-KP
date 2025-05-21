@@ -23,20 +23,71 @@ export const Login = () => {
     });
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+  //   setLoading(true);
+  //   try {
+  //     const response = await login(credentials.username, credentials.password);
+  //     Swal.fire({
+  //       icon: "success",
+  //       title: "Login Berhasil",
+  //       text: `Selamat Datang, ${response.name}`,
+  //       timer: 1500,
+  //       showConfirmButton: false,
+  //     });
+  //     // redirect
+  //     const userRole = response.role;
+  //     if (userRole === "leader") {
+  //       navigate("/dashboard/leader");
+  //     } else if (userRole === "team_fu") {
+  //       navigate("/dashboard/team-fu");
+  //     } else {
+  //       navigate("/dashboard");
+  //     }
+  //     // if (error.response && error.response.status === 400) {
+  //   } catch (error) {
+  //     console.log("Error caught : ", error);
+  //     if (error && error.response && error.response.data) {
+  //       setError(
+  //         Swal.fire({
+  //           icon: "error",
+  //           title: "Login Gagal",
+  //           text: error.response.data.msg || "terjadi Kesalahaan Saat Login",
+  //           timer: 2000,
+  //         })
+  //       );
+  //     } else {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Oops....",
+  //         text: error.response.data.msg || "Terjadi Kesalahan Saat Login",
+  //         timer: 2000,
+  //       });
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError(""); // Reset error message lokal (jika pakai form validation)
+    setLoading(true); // Aktifkan loading indicator
+
     try {
       const response = await login(credentials.username, credentials.password);
-      Swal.fire({
+
+      // Tampilkan SweetAlert login berhasil
+      await Swal.fire({
         icon: "success",
         title: "Login Berhasil",
         text: `Selamat Datang, ${response.name}`,
         timer: 1500,
         showConfirmButton: false,
       });
-      // redirect
+
+      // Arahkan berdasarkan role user
       const userRole = response.role;
       if (userRole === "leader") {
         navigate("/dashboard/leader");
@@ -46,16 +97,34 @@ export const Login = () => {
         navigate("/dashboard");
       }
     } catch (error) {
-      setError(
+      console.log("Error caught:", error);
+
+      // Ambil pesan dari backend jika tersedia
+      const backendError = error?.response?.data?.msg;
+      console.log("ini error backend", backendError);
+
+      if (backendError) {
+        // Tampilkan error dari backend
         Swal.fire({
           icon: "error",
           title: "Login Gagal",
-          text: "Username atau Password Salah",
-          timer: 1500,
-        })
-      );
+          text: backendError,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+      // Jika tidak ada response dari backend (misal: error jaringan)
+      else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Terjadi kesalahan koneksi atau server tidak merespon.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
     } finally {
-      setLoading(false);
+      setLoading(false); // Matikan loading indicator
     }
   };
 
@@ -66,7 +135,7 @@ export const Login = () => {
   // Handle Logout
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
         {/* Logo atau Avatar Placeholder */}
         <div className="text-center">
@@ -89,7 +158,7 @@ export const Login = () => {
                 name="username"
                 type="text"
                 autoComplete="username"
-                required
+                // required
                 className="appearance-none rounded-t-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
                 placeholder="Username"
                 value={credentials.username}
@@ -105,7 +174,7 @@ export const Login = () => {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                required
+                // required
                 className="appearance-none rounded-b-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={credentials.password}
@@ -114,7 +183,7 @@ export const Login = () => {
               <button
                 type="button"
                 onClick={togglePassword}
-                className="absolute right-2 top-2 text-xl text-gray-500"
+                className="absolute right-2 top-3 text-xl text-gray-500"
               >
                 {showPassword ? <IoEyeOff /> : <IoEye />}
               </button>
