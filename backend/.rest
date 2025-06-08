@@ -194,5 +194,32 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE5YmMxNDljL
 
 
 ###
-GET http://localhost:5000/webKp/komplain/layanan
+GET http://localhost:5000/webKp/komplain/agent/layanan
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NzgxNTUxN30.rzXuz9hs7btXXHq6KQapM7x3Y8a8iTJqiqW_iFI1_IM
+
+
+###
+GET http://localhost:5000/webKp/komplain/agent/layanan/fb11f975-085b-44cb-a89a-e8c2a44d2877/field
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NzgxNTUxN30.rzXuz9hs7btXXHq6KQapM7x3Y8a8iTJqiqW_iFI1_IM
+
+
+# edit
+###
+PATCH  http://localhost:5000/webKp/komplain/agent/b415328b-362a-11f0-9234-22a5d2317bd6/edit
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA5NDk1MH0.bJPn0X77UR8nnOBWiS6nP1jALX-0RiSP0X_qmg00o_A
+Content-Type: application/json
+
+{
+  "nomor_Indihome": "12345678",
+  "nama_Pelanggan": "Musang King",
+  "noTlp_Pelanggan": "0812345678901",
+  "email_Pelanggan": "contoh@gmail.com",
+  "alamat_Pelanggan": "Pamulang",
+  "layananId": "d88601d1-3015-4b17-a9dc-fb9d7156e19f",
+  "priority": "medium"
+}
+
+
+###
+DELETE http://localhost:5000/webKp/komplain/agent/c62bc37b-7778-4883-b4c7-e7c9c53c7007/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA5NDk1MH0.bJPn0X77UR8nnOBWiS6nP1jALX-0RiSP0X_qmg00o_A

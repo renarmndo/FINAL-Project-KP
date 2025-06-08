@@ -38,7 +38,6 @@ class Komplain
   public data!: Record<string, any>;
   public priority!: "high" | "medium" | "low";
   public status!: "pending" | "processing" | "completed";
-
   public agentId!: string;
   public handlerId?: string | null;
 
@@ -83,7 +82,7 @@ Komplain.init(
     },
     data: {
       type: DataTypes.JSON,
-      allowNull: false,
+      allowNull: true,
     },
     priority: {
       type: DataTypes.ENUM("low", "medium", "high"),

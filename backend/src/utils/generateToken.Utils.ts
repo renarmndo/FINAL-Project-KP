@@ -6,7 +6,7 @@ dotenv.config();
 
 export const generateToken = (res: Response, userId: string, role: string) => {
   const secretKey = process.env.JWT_SECRET;
-  const expiresIn = process.env.JWT_EXPIRED || "1h";
+  const expiresIn = process.env.JWT_EXPIRED || "15s";
   if (!secretKey) {
     throw new Error("Token is not defined");
   }

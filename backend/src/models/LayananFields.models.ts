@@ -68,6 +68,7 @@ Layanan.hasMany(LayananField, {
 });
 LayananField.belongsTo(Layanan, {
   foreignKey: "layananId",
+  as: "layanan",
 });
 
 export default LayananField;

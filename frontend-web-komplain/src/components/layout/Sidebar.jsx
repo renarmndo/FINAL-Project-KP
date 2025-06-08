@@ -133,12 +133,8 @@ export const Sidebar = ({ toggleSidebar, sidebarOpen }) => {
       setLoading(true);
       setTimeout(() => {
         logOut();
-        navigate("/login");
+        navigate("/login", { replace: true });
       }, 1000);
-
-      // tunggu responslogout
-
-      // tambahkan delay
     }
   };
 

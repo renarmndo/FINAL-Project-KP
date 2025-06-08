@@ -1,12 +1,21 @@
 import { Request, Response } from "express";
 import User from "../models/User.model";
 import Komplain from "../models/Komplain.model";
+import Layanan from "../models/Layanan.models";
 import ResponseKomplain from "../models/Response.model";
 
 export const getKomplain = async (req: Request, res: Response) => {
   try {
     const komplain = await Komplain.findAll({
       order: [["createdAt", "DESC"]],
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        // { model: User, as: "Agent" },
+        { model: User, as: "Handler" },
+        { model: Layanan, as: "layanan" },
+      ],
     });
     res.status(200).json({
       msg: "Berhasil Mendapatkan Data Komplain",
@@ -65,7 +74,7 @@ export const responseKomplain: any = async (req: Request, res: Response) => {
 
     const newResponse = await ResponseKomplain.create({
       komplainId,
-      handlerId,
+      handlerId: handlerId,
       jawaban,
       catatanInternal,
       status: "completed",

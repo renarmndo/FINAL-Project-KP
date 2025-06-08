@@ -8,8 +8,18 @@ import Layanan from "../models/Layanan.models";
 // gET aLL Complains
 export const getAllComplains: any = async (req: Request, res: Response) => {
   try {
-    const { msisdn, title, description, priority, status, startDate, endDate } =
-      req.query;
+    const {
+      nomor_Indihome,
+      nama_Pelanggan,
+      noTlp_Pelanggan,
+      email_Pelanggan,
+      alamat_Pelanggan,
+      layananId,
+      priority,
+      status,
+      startDate,
+      endDate,
+    } = req.query;
 
     const userRole = req.user.role;
     const userId = req.user.id;
@@ -56,8 +66,17 @@ export const getAllComplains: any = async (req: Request, res: Response) => {
 
     const komplainData = komplain.map((item: any) => ({
       id: item.id,
-      msisdn: item.msisdn,
-      title: item.title,
+      nomor_Indihome: item.nomor_Indihome,
+      nama_Pelanggan: item.nama_Pelanggan,
+      noTlp_Pelanggan: item.noTlp_Pelanggan,
+      email_Pelanggan: item.email_Pelanggan,
+      alamat_Pelanggan: item.alamat_Pelanggan,
+      layanan: item.Layanan
+        ? {
+            id: item.Layanan.id,
+            name: item.Layanan.name,
+          }
+        : null,
       priority: item.priority,
       status: item.status,
       agent: item.Agent
@@ -133,12 +152,12 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       alamat_Pelanggan,
       layananId,
       priority,
+      fields, // ambil fields dari body
     } = req.body;
 
     const agentId = req.user.id;
 
     // validasi data wajib
-
     if (
       !nomor_Indihome ||
       !nama_Pelanggan ||
@@ -153,9 +172,7 @@ export const createKomplain: any = async (req: Request, res: Response) => {
     }
 
     const existingMsisdn = await Komplain.findOne({
-      where: {
-        nomor_Indihome,
-      },
+      where: { nomor_Indihome },
     });
 
     if (existingMsisdn) {
@@ -164,7 +181,7 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       });
     }
 
-    // simpan komplain
+    // simpan komplain + field tambahan
     const komplain = await Komplain.create({
       nomor_Indihome,
       nama_Pelanggan,
@@ -173,10 +190,11 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       alamat_Pelanggan,
       layananId,
       agentId,
-      priority: "medium",
+      priority: priority || "medium",
       status: "pending",
-      data: {},
+      data: fields || {}, // <-- ini bagian yang ditambahkan
     });
+
     return res.status(201).json({
       message: "Komplain berhasil dibuat",
       data: komplain,
@@ -184,12 +202,10 @@ export const createKomplain: any = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      msg: "Terjadi Kesalahan saat mebambahkan Komplain",
-      error: error,
+      msg: "Terjadi Kesalahan saat menambahkan Komplain",
     });
   }
 };
-
 export const followUpKomplain: any = async (req: Request, res: Response) => {
   try {
     const komplainId = req.params.id;
@@ -396,8 +412,9 @@ export const getMyKomplain: any = async (req: Request, res: Response) => {
 
     // Cek jika data kosong
     if (komplainList.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         msg: "Belum ada data komplain tersimpan",
+        data: [],
       });
     }
 
@@ -416,21 +433,65 @@ export const getMyKomplain: any = async (req: Request, res: Response) => {
 };
 
 // get layanan input leader
-export const getLayanan: any = async (req: Request, res: Response) => {
-  try {
-    const layananList = await Layanan.findAll({
-      attributes: ["id", "nama_layanan", "deskripsi_layanan"], // field yang ingin diambil
-    });
 
+// delete komplain
+export const deleteKomplain: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // validation
+
+    // check apakah ada komplain
+    const existingKomplain = await Komplain.findByPk(id);
+    if (!existingKomplain) {
+      return res.status(404).json({
+        msg: "Komplain Tidak Ditemukan",
+      });
+    }
+
+    // jika komplain sedang dikerjkan
+    if (existingKomplain.status === "processing") {
+      return res.status(403).json({
+        msg: "Komplain tidak bisa dihapus karena sedang diproses",
+      });
+    }
+
+    // hapus komplain
+    await existingKomplain.destroy();
     return res.status(200).json({
-      status: "success",
-      data: layananList,
+      msg: "Komplain Berhasil Dihapus",
     });
   } catch (error) {
-    console.error("Error fetching layanan:", error);
+    console.log(error);
     return res.status(500).json({
-      status: "error",
-      msg: "Gagal mengambil data layanan",
+      msg: "Terjadi Kesalahan Pada Server",
+    });
+  }
+};
+
+export const editKomplain: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updatData = req.body;
+
+    // validasi apakah komplain ada
+    const existingKomplain = await Komplain.findByPk(id);
+    if (!existingKomplain) {
+      return res.status(404).json({
+        msg: "Komplain tidak ditemukan",
+      });
+    }
+
+    // lakukan update
+    await existingKomplain.update(updatData);
+    return res.status(200).json({
+      msg: "Komplain berhasil diupdate",
+      data: existingKomplain,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Terjadi Kesalahan Pada Server",
     });
   }
 };

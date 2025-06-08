@@ -1,6 +1,10 @@
 import express from "express";
 import { protect, authorized } from "../middleware/Auth.Middleware";
-import { createField, getAllFields } from "../controllers/Leader.controller";
+import {
+  createField,
+  getAllFields,
+  getAllKomplainCompleted,
+} from "../controllers/Leader.controller";
 import { createFieldLayanan } from "../controllers/Leader.controller";
 
 const router = express.Router();
@@ -12,5 +16,12 @@ router.post("/create-layanan", authorized("leader"), createField);
 
 // create fileds
 router.post("/:id/create-field", authorized("leader"), createFieldLayanan);
+
+// get all komplain
+router.get(
+  "/komplain-completed",
+  authorized("leader"),
+  getAllKomplainCompleted
+);
 
 export default router;

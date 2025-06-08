@@ -41,4 +41,5 @@ export const logOut = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("userId");
+  window.dispatchEvent(new Event("storage")); // ← trigger update state
 };
