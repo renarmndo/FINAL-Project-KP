@@ -35,7 +35,7 @@ export const ComplaintDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedKomplain, setSelectedKomplain] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [setIsModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [dashboardStats, setDashboardStats] = useState({
@@ -135,40 +135,25 @@ export const ComplaintDashboard = () => {
   // Fix: edit delete functions
   const handleEdit = (komplainItem) => {
     console.log("Edit komplain:", komplainItem); // Debug log
-    setSelectedKomplain(komplainItem); // Fix: gunakan parameter yang benar
-    setShowModal(true); // Fix: gunakan showModal, bukan isModalOpen
+
+    // Validasi status - tidak bisa edit jika sedang processing atau completed
+    const status = komplainItem.status?.toLowerCase();
+    if (status === "completed" || status === "processing") {
+      Swal.fire({
+        title: "Tidak Dapat Diedit",
+        text: `Komplain dengan status "${komplainItem.status}" tidak dapat diedit.`,
+        icon: "info",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+    // Jika status pending, lanjutkan ke edit
+    setSelectedKomplain(komplainItem);
+    setShowModal(true);
   };
 
-  // const handleDelete = async (id) => {
-  //   const result = await Swal.fire({
-  //     title: "Yakin ingin menghapus komplain ini?",
-  //     text: "Tindakan ini tidak dapat dibatalkan!",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#d33",
-  //     cancelButtonColor: "#3085d6",
-  //     confirmButtonText: "Ya, hapus!",
-  //     cancelButtonText: "Batal",
-  //   });
-
-  //   if (result.isConfirmed) {
-  //     try {
-  //       await deleteKomplain(id);
-  //       await fetchDataKomplain();
-  //       Swal.fire("Berhasil!", "Komplain telah dihapus.", "success");
-  //     } catch (error) {
-  //       console.error("Gagal menghapus komplain:", error);
-  //       Swal.fire(
-  //         "Gagal",
-  //         "Gagal menghapus komplain. Silakan coba lagi.",
-  //         "error"
-  //       );
-  //     }
-  //   }
-  // };
   const handleDelete = async (komplain) => {
-    // Cek status terlebih dahulu
-    const status = komplain.status?.toLowerCase(); // Hindari error case-sensitive
+    const status = komplain.status?.toLowerCase();
     if (status === "completed" || status === "processing") {
       Swal.fire({
         title: "Tidak Dapat Dihapus",
@@ -176,10 +161,9 @@ export const ComplaintDashboard = () => {
         icon: "info",
         confirmButtonText: "OK",
       });
-      return; // hentikan eksekusi
+      return;
     }
 
-    // Lanjutkan jika status belum completed/processing
     const result = await Swal.fire({
       title: "Yakin ingin menghapus komplain ini?",
       text: "Tindakan ini tidak dapat dibatalkan!",
@@ -193,20 +177,20 @@ export const ComplaintDashboard = () => {
 
     if (result.isConfirmed) {
       try {
-        await deleteKomplain(komplain.id);
+        await deleteKomplain(komplain.id); // ✅ Menggunakan komplain.id untuk API call
         await fetchDataKomplain();
         Swal.fire("Berhasil!", "Komplain telah dihapus.", "success");
       } catch (error) {
         console.error("Gagal menghapus komplain:", error);
-        Swal.fire(
-          "Gagal",
-          "Gagal menghapus komplain. Silakan coba lagi.",
-          "error"
-        );
+
+        const message =
+          error.response?.data?.msg ||
+          "Gagal menghapus komplain. Silakan coba lagi.";
+
+        Swal.fire("Gagal", message, "error");
       }
     }
   };
-
   const handleUpdate = async (updatedData) => {
     try {
       await editKomplain(updatedData.id, updatedData); // Fungsi API untuk update data
@@ -422,6 +406,9 @@ export const ComplaintDashboard = () => {
                         Nama Pelanggan
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Layanan Komplain
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         No Telepon
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -458,6 +445,11 @@ export const ComplaintDashboard = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
                               {item.nama_Pelanggan}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {item.layanan?.nama_layanan}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -509,7 +501,7 @@ export const ComplaintDashboard = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation(); // Fix: prevent row click
-                                  handleDelete(item.id); // Fix: pass item.id
+                                  handleDelete(item); // Fix: pass item.id
                                 }}
                                 className="p-1 rounded-full hover:bg-red-100 transition-colors"
                               >

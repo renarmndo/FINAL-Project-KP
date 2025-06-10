@@ -72,29 +72,46 @@ export const responseKomplain: any = async (req: Request, res: Response) => {
       });
     }
 
-    const newResponse = await ResponseKomplain.create({
-      komplainId,
-      handlerId: handlerId,
-      jawaban,
-      catatanInternal,
-      status: "completed",
-    });
+    const komplain = await Komplain.findByPk(komplainId);
 
-    await Komplain.update(
-      {
+    // jika komplain sudah di response
+    if (!komplain) {
+      return res.status(404).json({
+        msg: "Komplain Not Found",
+      });
+    }
+
+    if (komplain.status === "completed") {
+      return res.status(400).json({
+        msg: "Komplain ini sudah diresponse oleh Team Fu",
+      });
+    } else {
+      const newResponse = await ResponseKomplain.create({
+        komplainId,
+        handlerId: handlerId,
+        jawaban,
+        catatanInternal,
         status: "completed",
-      },
-      {
-        where: {
-          id: komplainId,
-        },
-      }
-    );
+      });
 
-    return res.status(200).json({
-      msg: "Berhasil menambahkan response",
-      data: newResponse,
-    });
+      const [updated] = await Komplain.update(
+        { status: "completed" },
+        {
+          where: {
+            id: komplainId,
+          },
+        }
+      );
+      if (updated === 0) {
+        return res.status(404).json({
+          msg: "Komplain Not Found",
+        });
+      }
+      return res.status(200).json({
+        msg: "Berhasil menambahkan response",
+        data: newResponse,
+      });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({

@@ -4,6 +4,7 @@ import {
   createField,
   getAllFields,
   getAllKomplainCompleted,
+  createUser,
 } from "../controllers/Leader.controller";
 import { createFieldLayanan } from "../controllers/Leader.controller";
 
@@ -23,5 +24,7 @@ router.get(
   authorized("leader"),
   getAllKomplainCompleted
 );
+
+router.post("/create-user/leader", authorized("leader"), createUser);
 
 export default router;

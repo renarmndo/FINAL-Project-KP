@@ -18,13 +18,18 @@ export const getMyComplain = async () => {
 export const deleteKomplain = async (id) => {
   const token = localStorage.getItem("token");
   try {
-    await axios.delete(`${API_URL}/komplain/agent/${id}/delete`, {
+    const res = await axios.delete(`${API_URL}/komplain/agent/${id}/delete`, {
+      // webKp/komplain/agent/id/delete
+
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log("ini ID nya", id);
+    return res.data;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 
@@ -44,6 +49,7 @@ export const editKomplain = async (id, data) => {
     return response.data.data;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 

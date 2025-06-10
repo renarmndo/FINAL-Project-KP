@@ -4,6 +4,9 @@ import LayananField from "../models/LayananFields.models";
 import Komplain from "../models/Komplain.model";
 import User from "../models/User.model";
 import { Op } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcryptjs";
+import { generateToken } from "../utils/generateToken.Utils";
 
 export const getAllFields: any = async (req: Request, res: Response) => {
   try {
@@ -110,6 +113,62 @@ export const getAllKomplainCompleted: any = async (
       msg: "Data komplain dengan status completed berhasil didapatkan",
       data: komplainData,
     });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+export const createUser: any = async (req: Request, res: Response) => {
+  try {
+    const { name, username, password, role } = req.body;
+
+    if (!name || !username || !password || !role) {
+      return res.status(400).json({
+        msg: "Semua field wajib diisi",
+      });
+    }
+    // chek apakah username ada
+    const exisUsername = await User.findOne({
+      where: {
+        username,
+      },
+    });
+
+    if (exisUsername) {
+      return res.status(400).json({
+        msg: "Username sudah terdaftar",
+      });
+    }
+
+    // hashing password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // create new user
+    const user = await User.create({
+      name,
+      username,
+      password: hashedPassword,
+      role,
+    });
+
+    if (user) {
+      //  genereate token
+      const token = generateToken(res, user.id, user.role);
+      return res.status(201).json({
+        msg: "Berhasil Membuat User",
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        role: user.role,
+        token,
+      });
+    } else {
+      return res.status(500).json({
+        msg: "Invalid, Data terjadi kesalahan pada server",
+      });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ msg: "Server Error" });

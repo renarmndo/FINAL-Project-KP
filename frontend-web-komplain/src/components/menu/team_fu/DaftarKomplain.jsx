@@ -51,25 +51,86 @@ export const DaftarKomplain = () => {
     fetchData();
   }, []);
 
+  // Function to refresh data after response
+  const refreshData = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/webKp/teamfu/komplain",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage?.getItem("token") || ""}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        setDataKomplain(result.data || []);
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+  };
+
   // state response komplain
   const handleBalasanSubmit = async () => {
     if (!selectedKomplain || !selectedKomplain.id) {
       Swal.fire("Gagal", "Silahakan pilih komplain terlebih dahulu.", "error");
       return;
     }
-    if (!jawaban.trim()) {
-      Swal.fire("Gagal", "Jawaban tidak boleh kososng", "error");
+
+    // Check if complaint is already completed
+    if (selectedKomplain.status === "completed") {
+      Swal.fire({
+        title: "Tidak Dapat Merespon",
+        text: "Komplain ini sudah selesai dan tidak dapat diberikan response lagi.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#d33",
+      });
       return;
     }
+
+    if (!jawaban.trim()) {
+      Swal.fire("Gagal", "Jawaban tidak boleh kosong", "error");
+      return;
+    }
+
     try {
+      // Show loading
+      Swal.fire({
+        title: "Mengirim Response...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       await responseKomplain(selectedKomplain.id, jawaban, catatanInternal);
-      Swal.fire("Berhasil", "Respon komplain berhasil dikirim.", "success");
 
-      // reset
+      // Update status locally for real-time update
+      setDataKomplain((prevData) =>
+        prevData.map((item) =>
+          item.id === selectedKomplain.id
+            ? { ...item, status: "completed" }
+            : item
+        )
+      );
 
+      // Also update the selected komplain
+      setSelectedKomplain((prev) => ({ ...prev, status: "completed" }));
+
+      // Close modal and reset form
       setShowModal(false);
       setJawaban("");
       setCatatanInternal("");
+
+      Swal.fire("Berhasil", "Respon komplain berhasil dikirim.", "success");
+
+      // Refresh data from server to ensure consistency
+      await refreshData();
+
       setSelectedKomplain(null);
     } catch (error) {
       Swal.fire(
@@ -129,23 +190,6 @@ export const DaftarKomplain = () => {
     setSelectedKomplain(komplain);
     setShowModal(true);
   };
-
-  // const handleBalasanSubmit = async () => {
-  //   if (!balasan.trim()) return;
-
-  //   // Simulate API call for reply
-  //   console.log(
-  //     "Sending reply:",
-  //     balasan,
-  //     "to complaint:",
-  //     selectedKomplain.id
-  //   );
-
-  //   // Close modal and reset
-
-  //   // Show success message (you can implement a toast notification)
-  //   alert("Balasan berhasil dikirim!");
-  // };
 
   if (loading) {
     return (
@@ -351,16 +395,16 @@ export const DaftarKomplain = () => {
                             : item.status === "processing"
                             ? "Proses"
                             : item.status === "completed"
-                            ? "Selesai"
+                            ? "Completed"
                             : item.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                            item.priority === "tinggi"
+                            item.priority === "high"
                               ? "bg-red-100 text-red-800 border border-red-200"
-                              : item.priority === "sedang"
+                              : item.priority === "medium"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
                               : "bg-green-100 text-green-800 border border-green-200"
                           }`}
@@ -369,7 +413,7 @@ export const DaftarKomplain = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                        {item.agentId}
+                        {item.handler?.name}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {formatDate(item.createdAt)}
@@ -558,9 +602,9 @@ export const DaftarKomplain = () => {
                     </label>
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize mt-1 ${
-                        selectedKomplain.priority === "tinggi"
+                        selectedKomplain.priority === "low"
                           ? "bg-red-100 text-red-800"
-                          : selectedKomplain.priority === "sedang"
+                          : selectedKomplain.priority === "medium"
                           ? "bg-yellow-100 text-yellow-800"
                           : "bg-green-100 text-green-800"
                       }`}
@@ -576,23 +620,50 @@ export const DaftarKomplain = () => {
                   </label>
                   <div className="mt-1 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-900">
-                      {selectedKomplain.layananId.nama_layanan ||
+                      {selectedKomplain.layanan?.nama_layanan ||
                         "Tidak ada deskripsi"}
                     </p>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Berikan Response
-                  </label>
-                  <textarea
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    rows="4"
-                    placeholder="Tulis balasan untuk komplain ini..."
-                    value={jawaban}
-                    onChange={(e) => setJawaban(e.target.value)}
-                  />
-                </div>
+
+                {/* Show response form only if status is not completed */}
+                {selectedKomplain.status !== "completed" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Berikan Response
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      rows="4"
+                      placeholder="Tulis balasan untuk komplain ini..."
+                      value={jawaban}
+                      onChange={(e) => setJawaban(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {/* Show message if already completed */}
+                {selectedKomplain.status === "completed" && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <svg
+                        className="w-5 h-5 text-green-600 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <p className="text-sm font-medium text-green-800">
+                        Komplain ini sudah selesai dan tidak dapat diberikan
+                        response lagi.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -600,18 +671,24 @@ export const DaftarKomplain = () => {
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
               <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setJawaban("");
+                    setCatatanInternal("");
+                  }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
-                  Batal
+                  {selectedKomplain.status === "completed" ? "Tutup" : "Batal"}
                 </button>
-                <button
-                  onClick={handleBalasanSubmit}
-                  disabled={!jawaban.trim()}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  Kirim Response
-                </button>
+                {selectedKomplain.status !== "completed" && (
+                  <button
+                    onClick={handleBalasanSubmit}
+                    disabled={!jawaban.trim()}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    Kirim Response
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Shield,
 } from "lucide-react";
+import { TambahUser } from "../../../assets/popup/leader/TambahUser";
 
 // Service
 import { API_URL } from "../../../auth/authService";
@@ -31,6 +32,15 @@ export const ListPengguna = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+
+  const openModalCreate = () => {
+    setCreateModalOpen(true);
+  };
+
+  const closeCreateModal = () => {
+    setCreateModalOpen(false);
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -45,7 +55,7 @@ export const ListPengguna = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setUsers(res.data.data);
+      setUsers(res.data.data || []);
     } catch (error) {
       console.log("Gagal Mengambil Data User", error);
       Swal.fire({
@@ -124,6 +134,14 @@ export const ListPengguna = () => {
         }
       }
     }
+  };
+
+  const handleUserAdded = (newUser) => {
+    // Opsi 1: Refresh semua data dari server (lebih aman)
+    fetchUsers();
+
+    // Opsi 2: Tambahkan user baru ke state (lebih cepat)
+    // setUsers(prevUsers => [...prevUsers, newUser]);
   };
 
   // Handle Update
@@ -312,7 +330,10 @@ export const ListPengguna = () => {
                   />
                   <span>{refreshing ? "Memuat..." : "Refresh"}</span>
                 </button>
-                <button className="flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-sm hover:shadow">
+                <button
+                  onClick={openModalCreate}
+                  className="flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-sm hover:shadow"
+                >
                   <UserPlus size={16} className="mr-2" />
                   <span>Tambah User Baru</span>
                 </button>
@@ -655,6 +676,13 @@ export const ListPengguna = () => {
           </div>
         </div>
       )}
+
+      {/* modal tambah user*/}
+      <TambahUser
+        isCreateOpen={isCreateModalOpen}
+        OnCreateClose={closeCreateModal}
+        onUserAdded={handleUserAdded}
+      />
     </div>
   );
 };

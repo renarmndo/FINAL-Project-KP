@@ -221,5 +221,23 @@ Content-Type: application/json
 
 
 ###
-DELETE http://localhost:5000/webKp/komplain/agent/c62bc37b-7778-4883-b4c7-e7c9c53c7007/delete
+DELETE http://localhost:5000/webKp/komplain/agent/a53b32dd-67a2-4f3b-9598-c7b22169d5bf/delete
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmE5NDY1LTdkYTktNDk2YS04MDA5LThmNTdhYzAyNzczNSIsInJvbGUiOiJhZ2VudCIsImlhdCI6MTc0NDA5NDk1MH0.bJPn0X77UR8nnOBWiS6nP1jALX-0RiSP0X_qmg00o_A
+
+
+
+webKp/komplain/agent/id/delete
+
+# create 
+
+###
+POST http://localhost:5000/webKp/leader/create-user/leader"
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1LTAwODAtNDc0Ni1hODNmLTkxYjNmMDNkNGJlNiIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDk0NzM5MTJ9.WTC2Qi9ioSifrcS12LVoII6Ri2F4kMYYePyRvXAi2gA
+Content-Type: application/json
+
+{
+    "name":"sailenda ahnaf zuhdi",
+    "username":"agent-2",
+    "password":"123",
+    "role":"agent"
+}

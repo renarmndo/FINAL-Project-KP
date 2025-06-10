@@ -104,8 +104,50 @@ const TambahDataKomplain = () => {
     setStep("customer");
   };
 
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Validasi untuk nomor Indihome - hanya angka
+    if (name === "nomor_Indihome") {
+      // Cek jika ada karakter selain angka
+      if (value && !/^\d+$/.test(value)) {
+        Swal.fire({
+          title: "Input Tidak Valid",
+          text: "Nomor Indihome hanya boleh berisi angka!",
+          icon: "warning",
+          confirmButtonText: "OK",
+          timer: 3000,
+          timerProgressBar: true,
+        });
+        return; // Tidak update state jika invalid
+      }
+    }
+
+    // Validasi untuk nomor telepon - hanya angka
+    if (name === "noTlp_Pelanggan") {
+      // Cek jika ada karakter selain angka
+      if (value && !/^\d+$/.test(value)) {
+        Swal.fire({
+          title: "Input Tidak Valid",
+          text: "Nomor telepon hanya boleh berisi angka!",
+          icon: "warning",
+          confirmButtonText: "OK",
+          timer: 3000,
+          timerProgressBar: true,
+        });
+        return; // Tidak update state jika invalid
+      }
+    }
+
+    // Update state jika validasi lolos
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -342,7 +384,7 @@ const TambahDataKomplain = () => {
                   Nomor Indihome <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   name="nomor_Indihome"
                   value={formData.nomor_Indihome}
                   onChange={handleChange}
@@ -374,7 +416,7 @@ const TambahDataKomplain = () => {
                   No. Telepon <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   name="noTlp_Pelanggan"
                   value={formData.noTlp_Pelanggan}
                   onChange={handleChange}
@@ -383,7 +425,6 @@ const TambahDataKomplain = () => {
                   required
                 />
               </div>
-
               <div className="space-y-2">
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                   <Mail className="w-4 h-4 mr-2 text-red-600" />
@@ -530,13 +571,12 @@ const TambahDataKomplain = () => {
               </p>
             </div>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-8">
             {formFields.length > 0 ? (
               <div className="space-y-6">
                 {formFields.map((field, index) => (
                   <div
-                    key={field.id}
+                    key={field.id || `${field.id}-${index}`}
                     className="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-red-200 transition-colors"
                   >
                     <label className="block text-sm font-semibold text-gray-700 mb-4">
@@ -544,8 +584,10 @@ const TambahDataKomplain = () => {
                         <span className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold mr-3">
                           {index + 1}
                         </span>
-                        {field.field_name}
-                        {field.required && (
+                        {/* Gunakan field.label dari backend atau fallback ke field_name */}
+                        {field.label || field.field_name}
+                        {/* Gunakan field.is_required dari backend */}
+                        {field.is_required && (
                           <span className="text-red-500 ml-2">*</span>
                         )}
                       </span>
@@ -554,36 +596,57 @@ const TambahDataKomplain = () => {
                     {field.field_type === "text" && (
                       <input
                         type="text"
-                        name={field.field_id}
-                        value={formData.fields[field.field_id] || ""}
+                        name={field.field_name}
+                        value={formData.fields[field.field_name] || ""}
                         onChange={handleFieldChange}
                         className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 bg-white"
-                        required={field.required}
-                        placeholder={`Masukkan ${field.field_name.toLowerCase()}...`}
+                        required={field.is_required}
+                        placeholder={`Masukkan ${(
+                          field.label || field.field_name
+                        ).toLowerCase()}...`}
                       />
                     )}
 
                     {field.field_type === "textarea" && (
                       <textarea
-                        name={field.field_id}
-                        value={formData.fields[field.field_id] || ""}
+                        name={field.field_name}
+                        value={formData.fields[field.field_name] || ""}
                         onChange={handleFieldChange}
                         className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 resize-none bg-white"
                         rows="5"
-                        required={field.required}
-                        placeholder={`Jelaskan ${field.field_name.toLowerCase()} secara detail...`}
+                        required={field.is_required}
+                        placeholder={`Jelaskan ${(
+                          field.label || field.field_name
+                        ).toLowerCase()} secara detail...`}
                       />
                     )}
 
-                    {field.field_type === "select" && (
-                      <select
-                        name={field.field_id}
-                        value={formData.fields[field.field_id] || ""}
+                    {field.field_type === "number" && (
+                      <input
+                        type="number"
+                        name={field.field_name}
+                        value={formData.fields[field.field_name] || ""}
                         onChange={handleFieldChange}
                         className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 bg-white"
-                        required={field.required}
+                        required={field.is_required}
+                        placeholder={`Masukkan ${(
+                          field.label || field.field_name
+                        ).toLowerCase()}...`}
+                      />
+                    )}
+
+                    {/* Hanya render field type yang didukung oleh backend model */}
+                    {field.field_type === "select" && field.options && (
+                      <select
+                        name={field.field_name}
+                        value={formData.fields[field.field_name] || ""}
+                        onChange={handleFieldChange}
+                        className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 bg-white"
+                        required={field.is_required}
                       >
-                        <option value="">Pilih {field.field_name}</option>
+                        <option value="">
+                          Pilih {field.label || field.field_name}
+                        </option>
                         {field.options?.map((option, idx) => (
                           <option key={idx} value={option.value}>
                             {option.label}
@@ -592,26 +655,14 @@ const TambahDataKomplain = () => {
                       </select>
                     )}
 
-                    {field.field_type === "number" && (
-                      <input
-                        type="number"
-                        name={field.field_id}
-                        value={formData.fields[field.field_id] || ""}
-                        onChange={handleFieldChange}
-                        className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 bg-white"
-                        required={field.required}
-                        placeholder={`Masukkan ${field.field_name.toLowerCase()}...`}
-                      />
-                    )}
-
                     {field.field_type === "date" && (
                       <input
                         type="date"
-                        name={field.field_id}
-                        value={formData.fields[field.field_id] || ""}
+                        name={field.field_name}
+                        value={formData.fields[field.field_name] || ""}
                         onChange={handleFieldChange}
                         className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 bg-white"
-                        required={field.required}
+                        required={field.is_required}
                       />
                     )}
 
@@ -619,18 +670,19 @@ const TambahDataKomplain = () => {
                       <div className="flex items-center">
                         <input
                           type="checkbox"
-                          name={field.field_id}
-                          checked={formData.fields[field.field_id] || false}
+                          name={field.id}
+                          checked={formData.fields[field.id] || false}
                           onChange={handleFieldChange}
                           className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                          required={field.required}
+                          required={field.is_required}
                         />
                         <span className="ml-3 text-gray-700">
-                          {field.field_name}
+                          {field.label || field.field_name}
                         </span>
                       </div>
                     )}
 
+                    {/* Tampilkan deskripsi jika ada */}
                     {field.description && (
                       <p className="text-sm text-gray-500 mt-3 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-200">
                         <span className="font-medium text-blue-700">

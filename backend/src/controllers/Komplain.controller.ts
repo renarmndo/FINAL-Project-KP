@@ -373,6 +373,7 @@ export const getMyKomplain: any = async (req: Request, res: Response) => {
             as: "Handler",
             attributes: ["id", "name", "username"],
           },
+          { model: Layanan, as: "layanan", attributes: ["id", "nama_layanan"] },
         ],
         order: [["createdAt", "DESC"]], // Urutkan dari terbaru
       });
@@ -438,7 +439,7 @@ export const getMyKomplain: any = async (req: Request, res: Response) => {
 export const deleteKomplain: any = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-
+    console.log("ini ID nya", id);
     // validation
 
     // check apakah ada komplain
@@ -450,9 +451,12 @@ export const deleteKomplain: any = async (req: Request, res: Response) => {
     }
 
     // jika komplain sedang dikerjkan
-    if (existingKomplain.status === "processing") {
+    if (
+      existingKomplain.status === "processing" ||
+      existingKomplain.status === "completed"
+    ) {
       return res.status(403).json({
-        msg: "Komplain tidak bisa dihapus karena sedang diproses",
+        msg: "Komplain tidak bisa dihapus karena sedang dalam pengerjaan",
       });
     }
 
@@ -479,6 +483,15 @@ export const editKomplain: any = async (req: Request, res: Response) => {
     if (!existingKomplain) {
       return res.status(404).json({
         msg: "Komplain tidak ditemukan",
+      });
+    }
+
+    if (
+      existingKomplain.status === "completed" ||
+      existingKomplain.status === "processing"
+    ) {
+      return res.status(403).json({
+        msg: "Komplain tidak bisa diupdate karena sedang dalam pengerjaan",
       });
     }
 
