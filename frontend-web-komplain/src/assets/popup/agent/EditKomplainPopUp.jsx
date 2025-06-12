@@ -9,6 +9,7 @@ import {
   MapPin,
   FileText,
   Calendar,
+  MessageSquare,
 } from "lucide-react";
 
 export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
@@ -20,6 +21,7 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
     email_Pelanggan: "",
     alamat_Pelanggan: "",
     priority: "medium",
+    catatanInternal: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,9 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
   // Load data komplain ke form saat popup dibuka
   useEffect(() => {
     if (komplain) {
+      // Extract catatanInternal from responses array if it exists
+      const catatanInternal = komplain.responses?.[0]?.catatanInternal || "";
+
       setFormData({
         id: komplain.id || "",
         nomor_Indihome: komplain.nomor_Indihome || "",
@@ -36,6 +41,7 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
         email_Pelanggan: komplain.email_Pelanggan || "",
         alamat_Pelanggan: komplain.alamat_Pelanggan || "",
         priority: komplain.priority || "medium",
+        catatanInternal: catatanInternal,
       });
     }
   }, [komplain]);
@@ -303,7 +309,7 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Status */}
+                {/* Prioritas */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Prioritas
@@ -321,6 +327,25 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
                   </select>
                 </div>
               </div>
+
+              {/* Catatan Internal (only shown if status is rejected) */}
+              {komplain?.status === "rejected" && (
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-500 mb-2">
+                    <MessageSquare size={16} className="inline mr-1" />
+                    Alasan Penolakan
+                  </label>
+                  <textarea
+                    name="catatanInternal"
+                    value={formData.catatanInternal}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="w-full px-4 py-3 text-gray-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors resize-none bg-gray-100"
+                    placeholder="Alasan penolakan komplain"
+                    disabled
+                  />
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}

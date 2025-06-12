@@ -13,7 +13,7 @@ export const getKomplain = async (req: Request, res: Response) => {
       },
       include: [
         // { model: User, as: "Agent" },
-        { model: User, as: "Handler" },
+        { model: User, as: "Handler", attributes: ["name", "username"] },
         { model: Layanan, as: "layanan" },
       ],
     });
@@ -95,7 +95,7 @@ export const responseKomplain: any = async (req: Request, res: Response) => {
       });
 
       const [updated] = await Komplain.update(
-        { status: "completed" },
+        { status: "completed", handlerId: handlerId },
         {
           where: {
             id: komplainId,
@@ -117,5 +117,109 @@ export const responseKomplain: any = async (req: Request, res: Response) => {
     return res.status(500).json({
       msg: "terjadi kesalahan pada server",
     });
+  }
+};
+
+export const komplainRejected: any = async (req: Request, res: Response) => {
+  try {
+    const { komplainId } = req.params;
+    const { catatanInternal } = req.body;
+    const handlerId = req.user?.id;
+    if (!handlerId) {
+      return res.status(401).json({
+        msg: "Not Authorized",
+      });
+    }
+
+    // ambil komplain
+    const komplain = await Komplain.findByPk(komplainId);
+
+    if (!komplain) {
+      return res.status(404).json({
+        msg: "Komplain Not Found",
+      });
+    }
+
+    if (komplain.status === "completed") {
+      return res.status(400).json({
+        msg: "Komplain ini sudah diresponse oleh Team Fu",
+      });
+    }
+
+    // update status komplain
+    await Komplain.update(
+      {
+        status: "rejected",
+        handlerId,
+      },
+      {
+        where: { id: komplainId },
+      }
+    );
+    if (catatanInternal) {
+      await ResponseKomplain.create({
+        komplainId,
+        handlerId: handlerId,
+        jawaban: "Komplain Ditolak",
+        catatanInternal,
+        status: "rejected",
+      });
+    }
+
+    // ambil data
+    const updatedKomplain = await Komplain.findByPk(komplainId, {
+      include: [
+        {
+          model: ResponseKomplain,
+          as: "responses",
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      msg: "Berhasil menolak Komplain",
+      data: updatedKomplain,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Terjadi Kesalahan Pada Server",
+    });
+  }
+};
+
+export const getDataById: any = async (req: Request, res: Response) => {
+  try {
+    const handlerId = req?.user.id;
+
+    if (!handlerId) {
+      return res.status(400).json({ msg: "Belum ada data yang diresponse" });
+    }
+
+    const komplain = await Komplain.findAll({
+      where: {
+        handlerId: handlerId, // filter hanya yang cocok
+      },
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: User,
+          as: "Handler",
+          attributes: ["name"],
+        },
+        {
+          model: Layanan,
+          as: "layanan",
+        },
+      ],
+    });
+
+    res.status(200).json({
+      msg: "Berhasil Mendapatkan Data Komplain Berdasarkan handlerId",
+      data: komplain,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Terjadi Kesalahan Pada Server" });
   }
 };

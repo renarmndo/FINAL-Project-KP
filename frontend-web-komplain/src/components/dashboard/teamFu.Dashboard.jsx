@@ -59,10 +59,10 @@ export const TeamFuDashboard = () => {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Selamat Datang di Dashboard Team Follow Up
+              <h1 className="text-2xl font-bold text-gray-900">
+                Team Fu Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 mt-2 text-sm">
                 Kelola dan pantau semua aktivitas follow up komplain pelanggan
                 secara efektif.
               </p>
@@ -79,33 +79,6 @@ export const TeamFuDashboard = () => {
 
       {/* Statistics Cards */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Total Komplain"
-            value={stats.total}
-            color="red"
-            icon="document"
-          />
-          <StatCard
-            title="Pending"
-            value={stats.pending}
-            color="orange"
-            icon="clock"
-          />
-          <StatCard
-            title="Dalam Proses"
-            value={stats.proses}
-            color="yellow"
-            icon="progress"
-          />
-          <StatCard
-            title="Selesai"
-            value={stats.selesai}
-            color="green"
-            icon="check"
-          />
-        </div>
-
         {/* Overview Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">

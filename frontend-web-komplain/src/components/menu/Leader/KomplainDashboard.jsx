@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, Filter, Download, Calendar, CheckCircle } from "lucide-react";
 import { getKomplainByLeader } from "../../../service/getMyComplain";
+import { reportKomplain } from "../../../service/Index";
+import Swal from "sweetalert2";
 
 export const KomplainDashboard = () => {
   const [startDate, setStartDate] = useState("");
@@ -39,128 +41,128 @@ export const KomplainDashboard = () => {
     fetcKomplain();
   }, []);
 
-  // const filteredData = useMemo(() => {
-  //   console.log("=== MULAI FILTERING ===");
-  //   console.log("komplainData:", komplainData);
-  //   console.log("komplainData.length:", komplainData?.length);
-  //   console.log("searchTerm:", `"${searchTerm}"`);
-  //   console.log("startDate:", startDate);
-  //   console.log("endDate:", endDate);
+  const filteredData = useMemo(() => {
+    console.log("=== MULAI FILTERING ===");
+    console.log("komplainData:", komplainData);
+    console.log("komplainData.length:", komplainData?.length);
+    console.log("searchTerm:", `"${searchTerm}"`);
+    console.log("startDate:", startDate);
+    console.log("endDate:", endDate);
 
-  //   // Pastikan komplainData adalah array dan tidak kosong
-  //   if (!Array.isArray(komplainData)) {
-  //     console.log("❌ Data bukan array:", typeof komplainData);
-  //     return [];
-  //   }
+    // Pastikan komplainData adalah array dan tidak kosong
+    if (!Array.isArray(komplainData)) {
+      console.log("❌ Data bukan array:", typeof komplainData);
+      return [];
+    }
 
-  //   if (komplainData.length === 0) {
-  //     console.log("❌ Data array kosong");
-  //     return [];
-  //   }
+    if (komplainData.length === 0) {
+      console.log("❌ Data array kosong");
+      return [];
+    }
 
-  //   let filtered = [...komplainData]; // Buat copy array
-  //   console.log("✅ Data awal:", filtered.length);
+    let filtered = [...komplainData]; // Buat copy array
+    console.log("✅ Data awal:", filtered.length);
 
-  //   // Filter berdasarkan tanggal hanya jika kedua tanggal diisi dan valid
-  //   if (
-  //     startDate &&
-  //     endDate &&
-  //     startDate.trim() !== "" &&
-  //     endDate.trim() !== ""
-  //   ) {
-  //     console.log("🔍 Menjalankan filter tanggal...");
-  //     try {
-  //       const start = new Date(startDate);
-  //       const end = new Date(endDate);
-  //       // Set end date ke akhir hari
-  //       end.setHours(23, 59, 59, 999);
+    // Filter berdasarkan tanggal hanya jika kedua tanggal diisi dan valid
+    if (
+      startDate &&
+      endDate &&
+      startDate.trim() !== "" &&
+      endDate.trim() !== ""
+    ) {
+      console.log("🔍 Menjalankan filter tanggal...");
+      try {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        // Set end date ke akhir hari
+        end.setHours(23, 59, 59, 999);
 
-  //       console.log("Start date:", start);
-  //       console.log("End date:", end);
+        console.log("Start date:", start);
+        console.log("End date:", end);
 
-  //       filtered = filtered.filter((item) => {
-  //         // Prioritas updatedAt, lalu createdAt
-  //         const dateField = item.updatedAt || item.createdAt;
-  //         if (!dateField) {
-  //           console.log("⚠️ Item tanpa tanggal, tetap tampilkan:", item.id);
-  //           return true;
-  //         }
+        filtered = filtered.filter((item) => {
+          // Prioritas updatedAt, lalu createdAt
+          const dateField = item.updatedAt || item.createdAt;
+          if (!dateField) {
+            console.log("⚠️ Item tanpa tanggal, tetap tampilkan:", item.id);
+            return true;
+          }
 
-  //         const itemDate = new Date(dateField);
-  //         if (isNaN(itemDate.getTime())) {
-  //           console.log(
-  //             "⚠️ Item dengan tanggal invalid, tetap tampilkan:",
-  //             item.id,
-  //             dateField
-  //           );
-  //           return true;
-  //         }
+          const itemDate = new Date(dateField);
+          if (isNaN(itemDate.getTime())) {
+            console.log(
+              "⚠️ Item dengan tanggal invalid, tetap tampilkan:",
+              item.id,
+              dateField
+            );
+            return true;
+          }
 
-  //         const inRange = itemDate >= start && itemDate <= end;
-  //         console.log(
-  //           `Item ${
-  //             item.id
-  //           }: ${dateField} -> ${itemDate.toISOString()} -> inRange: ${inRange}`
-  //         );
-  //         return inRange;
-  //       });
-  //       console.log("📅 Setelah filter tanggal:", filtered.length);
-  //     } catch (error) {
-  //       console.log("❌ Error pada filter tanggal:", error);
-  //     }
-  //   } else {
-  //     console.log("⏭️ Skip filter tanggal (tidak ada range lengkap)");
-  //   }
+          const inRange = itemDate >= start && itemDate <= end;
+          console.log(
+            `Item ${
+              item.id
+            }: ${dateField} -> ${itemDate.toISOString()} -> inRange: ${inRange}`
+          );
+          return inRange;
+        });
+        console.log("📅 Setelah filter tanggal:", filtered.length);
+      } catch (error) {
+        console.log("❌ Error pada filter tanggal:", error);
+      }
+    } else {
+      console.log("⏭️ Skip filter tanggal (tidak ada range lengkap)");
+    }
 
-  //   // Filter berdasarkan pencarian hanya jika ada search term yang tidak kosong
-  //   if (searchTerm && searchTerm.trim() !== "") {
-  //     console.log("🔍 Menjalankan filter pencarian...");
-  //     const term = searchTerm.toLowerCase().trim();
+    // Filter berdasarkan pencarian hanya jika ada search term yang tidak kosong
+    if (searchTerm && searchTerm.trim() !== "") {
+      console.log("🔍 Menjalankan filter pencarian...");
+      const term = searchTerm.toLowerCase().trim();
 
-  //     filtered = filtered.filter((item) => {
-  //       // Daftar field yang akan dicari berdasarkan struktur data Anda
-  //       const searchFields = [
-  //         item.nama_Pelanggan, // "Musang King"
-  //         item.nomor_Indihome, // "12345678"
-  //         item.alamat_Pelanggan, // "Pamulang"
-  //         item.email_Pelanggan, // "contoh@gmail.com"
-  //         item.noTlp_Pelanggan, // "0812345678901"
-  //         item.priority, // "high"
-  //         item.status, // "completed"
-  //         // Handler bisa null atau object
-  //         item.Handler?.name,
-  //         // Agent adalah object
-  //         item.Agent?.name, // "agent 2"
-  //         // layanan adalah object
-  //         item.layanan?.nama_layanan, // "Tagihan Tidak Sesuai"
-  //       ];
+      filtered = filtered.filter((item) => {
+        // Daftar field yang akan dicari berdasarkan struktur data Anda
+        const searchFields = [
+          item.nama_Pelanggan, // "Musang King"
+          item.nomor_Indihome, // "12345678"
+          item.alamat_Pelanggan, // "Pamulang"
+          item.email_Pelanggan, // "contoh@gmail.com"
+          item.noTlp_Pelanggan, // "0812345678901"
+          item.priority, // "high"
+          item.status, // "completed"
+          // Handler bisa null atau object
+          item.Handler?.name,
+          // Agent adalah object
+          item.Agent?.name, // "agent 2"
+          // layanan adalah object
+          item.layanan?.nama_layanan, // "Tagihan Tidak Sesuai"
+        ];
 
-  //       // Filter field yang tidak null/undefined dan konversi ke string
-  //       const validFields = searchFields
-  //         .filter(
-  //           (field) => field != null && field !== undefined && field !== ""
-  //         )
-  //         .map((field) => String(field).toLowerCase());
+        // Filter field yang tidak null/undefined dan konversi ke string
+        const validFields = searchFields
+          .filter(
+            (field) => field != null && field !== undefined && field !== ""
+          )
+          .map((field) => String(field).toLowerCase());
 
-  //       console.log(`🔎 Item ${item.id} - Search fields:`, validFields);
+        console.log(`🔎 Item ${item.id} - Search fields:`, validFields);
 
-  //       // Cek apakah ada field yang mengandung search term
-  //       const found = validFields.some((field) => field.includes(term));
-  //       console.log(`🔎 Item ${item.id} - Found: ${found}`);
+        // Cek apakah ada field yang mengandung search term
+        const found = validFields.some((field) => field.includes(term));
+        console.log(`🔎 Item ${item.id} - Found: ${found}`);
 
-  //       return found;
-  //     });
-  //     console.log("🔍 Setelah filter pencarian:", filtered.length);
-  //   } else {
-  //     console.log("⏭️ Skip filter pencarian (tidak ada search term)");
-  //   }
+        return found;
+      });
+      console.log("🔍 Setelah filter pencarian:", filtered.length);
+    } else {
+      console.log("⏭️ Skip filter pencarian (tidak ada search term)");
+    }
 
-  //   console.log("✅ Data final:", filtered.length);
-  //   console.log("=== SELESAI FILTERING ===");
-  //   return filtered;
-  // }, [komplainData, startDate, endDate, searchTerm]);
+    console.log("✅ Data final:", filtered.length);
+    console.log("=== SELESAI FILTERING ===");
+    return filtered;
+  }, [komplainData, startDate, endDate, searchTerm]);
 
-  const filteredData = [1, 2];
+  // const filteredData = [1, 2];
   const getPriorityColor = (priority) => {
     switch (priority?.toLowerCase()) {
       case "high":
@@ -174,67 +176,55 @@ export const KomplainDashboard = () => {
     }
   };
 
-  const exportToCSV = () => {
-    // Pastikan ada data untuk di-export
+  const exportToCSV = async () => {
+    // Validasi data
     if (!filteredData || filteredData.length === 0) {
-      alert("Tidak ada data untuk di-export");
+      Swal.fire({
+        title: "Tidak ada data",
+        text: "Tidak ada data untuk di-export.",
+        icon: "warning",
+        confirmButtonText: "Oke",
+      });
       return;
     }
 
-    const headers = [
-      "No Inihome",
-      "Nama",
-      "Alamat",
-      "Email",
-      "No Telepon",
-      "Komplain",
-      "Handler",
-      "Agent",
-      "Tanggal Komplain",
-      "Tanggal Selesai",
-      "Prioritas",
-    ];
+    try {
+      // Tampilkan loading Swal
+      Swal.fire({
+        title: "Mengunduh file...",
+        text: "Mohon tunggu sebentar.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
-    const csvContent = [
-      headers.join(","),
-      ...filteredData.map((row) =>
-        [
-          row.nomor_Indihome || "",
-          `"${row.nama_Pelanggan || ""}"`,
-          `"${row.alamat_Pelanggan || ""}"`,
-          row.email_Pelanggan || "",
-          row.noTlp_Pelanggan || "",
-          `"${row.layanan?.nama_layanan || ""}"`,
-          // Handle nested handler
-          typeof row.Handler === "string"
-            ? row.Handler
-            : row.Handler?.name || "N/A",
-          // Handle nested agent
-          typeof row.Agent === "string" ? row.Agent : row.Agent?.name || "N/A",
-          new Date(row.createdAt).toLocaleDateString("id-ID") || "",
-          new Date(row.updatedAt).toLocaleDateString("id-ID") || "",
-          row.priority || "",
-        ].join(",")
-      ),
-    ].join("\n");
+      // Panggil API export
+      await reportKomplain();
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "komplain-complete.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
+      // Setelah berhasil
+      Swal.fire({
+        title: "Berhasil!",
+        text: "File berhasil diunduh.",
+        icon: "success",
+        confirmButtonText: "Oke",
+      });
+    } catch (error) {
+      console.error("Export CSV gagal:", error);
+      Swal.fire({
+        title: "Gagal",
+        text: "Terjadi kesalahan saat mengunduh file.",
+        icon: "error",
+        confirmButtonText: "Tutup",
+      });
+    }
   };
 
   // Debug info
-  console.log("Render - Loading:", loading);
-  console.log("Render - KomplainData length:", komplainData.length);
-  console.log("Render - FilteredData length:", filteredData.length);
-  console.log("Render - Search term:", searchTerm);
-  console.log("Render - Date range:", startDate, "to", endDate);
 
   if (loading) return <p>Loading....</p>;
+
+  // handle download
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -261,17 +251,6 @@ export const KomplainDashboard = () => {
 
       <div className="px-6 py-6">
         {/* Debug Info - Hapus ini setelah masalah teratasi */}
-        <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-4 mb-4">
-          <h3 className="font-semibold text-yellow-800">Debug Info:</h3>
-          <p className="text-yellow-700">Total Data: {komplainData.length}</p>
-          <p className="text-yellow-700">
-            Data Terfilter: {filteredData.length}
-          </p>
-          <p className="text-yellow-700">Search Term: "{searchTerm}"</p>
-          <p className="text-yellow-700">
-            Date Range: {startDate} - {endDate}
-          </p>
-        </div>
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
@@ -296,7 +275,7 @@ export const KomplainDashboard = () => {
                 <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Cari nama, No Indihome, komplain..."
+                  placeholder="Cari nama, Msisdn, komplain..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -409,7 +388,7 @@ export const KomplainDashboard = () => {
               <thead className="bg-red-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-red-600 uppercase tracking-wider">
-                    No Indihome
+                    MSISDN
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-red-600 uppercase tracking-wider">
                     Nama Pelanggan

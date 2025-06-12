@@ -242,7 +242,7 @@ export const RiwayatKomplain = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold text-red-600 uppercase tracking-wider">
-                    No IndiHome
+                    Msisdn
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-red-600 uppercase tracking-wider">
                     Nama Pelanggan

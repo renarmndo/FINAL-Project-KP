@@ -51,9 +51,9 @@ export const ResponseKomplain = ({
         console.log("No valid response data, showing SweetAlert");
 
         Swal.fire({
-          title: "Belum Ada Tanggapan",
-          text: "Komplain Anda masih dalam proses peninjauan. Tim kami akan segera memberikan tanggapan.",
-          icon: "info",
+          title: "Komplain Sudah Diresponse",
+          text: "Komplain Anda sudah dalam proses peninjauan. Tim kami sudah mengirimkan tanggapan.",
+          icon: "success",
           confirmButtonText: "Mengerti",
           confirmButtonColor: "#3085d6",
           backdrop: true,
@@ -110,10 +110,14 @@ export const ResponseKomplain = ({
                 Komplain Anda:
               </h3>
               <p className="text-gray-600 text-sm">
-                ID: #{complaint?.id || responseData?.komplainId || "N/A"}
+                {complaint?.layanan.nama_layanan ||
+                  responseData?.layanan.nama_layanan ||
+                  "N/A"}
               </p>
               <p className="text-gray-700 mt-1">
-                {complaint?.subject || complaint?.title || "Tidak ada subjek"}
+                {complaint?.layanan.catatanInternal ||
+                  complaint?.layanan.catatanInternal ||
+                  "Tidak ada Keterangan"}
               </p>
             </div>
 
@@ -238,12 +242,12 @@ export const ResponseKomplain = ({
                       key={star}
                       className="text-2xl hover:text-yellow-400 transition-colors duration-200"
                     >
-                      ⭐
+                      🌟
                     </button>
                   ))}
                 </div>
                 <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                  Berikan Feedback
+                  PT Transkom Integrasi Mandiri
                 </button>
               </div>
             </div>
@@ -256,9 +260,6 @@ export const ResponseKomplain = ({
               className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
             >
               Tutup
-            </button>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-              Cetak Tanggapan
             </button>
           </div>
         </div>

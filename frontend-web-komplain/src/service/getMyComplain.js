@@ -76,10 +76,11 @@ export const getKomplainByLeader = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return res.data.data;
+    return res.data;
     // http://localhost:5000/webKp/leader/komplain-completed
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 
@@ -104,6 +105,28 @@ export const responseKomplain = async (
       }
     );
     return res.data.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const rejectedKomplain = async (komplainId, catatanInternal) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.patch(
+      `${API_URL}/teamfu/komplain/${komplainId}/rejected`,
+      {
+        catatanInternal: catatanInternal,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return res.data;
   } catch (error) {
     console.log(error);
     throw error;

@@ -3,11 +3,11 @@ import Layanan from "../models/Layanan.models";
 import LayananField from "../models/LayananFields.models";
 import Komplain from "../models/Komplain.model";
 import User from "../models/User.model";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.Utils";
-
+import XLSX from "xlsx";
 export const getAllFields: any = async (req: Request, res: Response) => {
   try {
     const fields = await Layanan.findAll();
@@ -172,5 +172,207 @@ export const createUser: any = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+// export const reportKomplainCsv: any = async (req: Request, res: Response) => {
+//   try {
+//     const complainData = await Komplain.findAll({
+//       where: { status: "completed" },
+//       include: [
+//         { model: Layanan, as: "layanan", attributes: ["nama_layanan"] },
+//       ],
+//       order: [["createdAt", "DESC"]],
+//     });
+
+//     if (!complainData || complainData.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         msg: "Data komplain tidak ditemukan",
+//       });
+//     }
+
+//     // format data untuk excel
+//     const excelData = complainData.map((item: any) => ({
+//       ID: item.id,
+//       "Nomor Indihome": item.nomor_Indihome,
+//       "Nama Pelanggan": item.nama_Pelanggan,
+//       "No Telp Pelanggan": item.noTlp_Pelanggan,
+//       "Email Pelanggan": item.email_Pelanggan,
+//       "Alamat Pelanggan": item.alamat_Pelanggan,
+//       "Jenis Layanan": item.layanan?.nama_layanan || "-",
+//       Status: item.status,
+//       Prioritas: item.priority,
+//       "Agent ID": item.agentId,
+//       "Handler ID": item.handlerId || "-",
+//       "Data Tambahan": item.data ? JSON.stringify(item.data) : "-",
+//       "Tanggal Dibuat": new Date(item.createdAt).toLocaleDateString("id-ID"),
+//       "Tanggal Update": new Date(item.updatedAt).toLocaleDateString("id-ID"),
+//     }));
+
+//     // Buat worksheet dan workbook
+//     const worksheet = XLSX.utils.json_to_sheet(excelData);
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Komplain");
+
+//     // Tulis file ke buffer
+//     const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+//     // Kirim buffer sebagai file unduhan
+//     res.setHeader(
+//       "Content-Disposition",
+//       "attachment; filename=laporan_komplain.xlsx"
+//     );
+//     res.setHeader(
+//       "Content-Type",
+//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+//     );
+//     return res.status(200).json({
+//       success: true,
+//       msg: "Data komplain berhasil didapatkan",
+//       data: buffer,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ msg: "Server Error" });
+//   }
+// };
+
+export const reportKomplainCsv: any = async (req: Request, res: Response) => {
+  try {
+    const complainData = await Komplain.findAll({
+      where: { status: "completed" },
+      include: [
+        { model: Layanan, as: "layanan", attributes: ["nama_layanan"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (!complainData || complainData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        msg: "Data komplain tidak ditemukan",
+      });
+    }
+
+    // format data untuk excel
+    const excelData = complainData.map((item: any) => ({
+      ID: item.id,
+      "Nomor Indihome": item.nomor_Indihome,
+      "Nama Pelanggan": item.nama_Pelanggan,
+      "No Telp Pelanggan": item.noTlp_Pelanggan,
+      "Email Pelanggan": item.email_Pelanggan,
+      "Alamat Pelanggan": item.alamat_Pelanggan,
+      "Jenis Layanan": item.layanan?.nama_layanan || "-",
+      Status: item.status,
+      Prioritas: item.priority,
+      "Agent ID": item.agentId,
+      "Handler ID": item.handlerId || "-",
+      "Data Tambahan": item.data ? JSON.stringify(item.data) : "-",
+      "Tanggal Dibuat": new Date(item.createdAt).toLocaleDateString("id-ID"),
+      "Tanggal Update": new Date(item.updatedAt).toLocaleDateString("id-ID"),
+    }));
+
+    // Buat worksheet dan workbook
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    // Set column widths (opsional, untuk tampilan yang lebih baik)
+    const columnWidths = [
+      { wch: 10 }, // ID
+      { wch: 15 }, // Nomor Indihome
+      { wch: 20 }, // Nama Pelanggan
+      { wch: 15 }, // No Telp Pelanggan
+      { wch: 25 }, // Email Pelanggan
+      { wch: 40 }, // Alamat Pelanggan
+      { wch: 20 }, // Jenis Layanan
+      { wch: 12 }, // Status
+      { wch: 10 }, // Prioritas
+      { wch: 15 }, // Agent ID
+      { wch: 15 }, // Handler ID
+      { wch: 30 }, // Data Tambahan
+      { wch: 15 }, // Tanggal Dibuat
+      { wch: 15 }, // Tanggal Update
+    ];
+    worksheet["!cols"] = columnWidths;
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Komplain");
+
+    // Tulis file ke buffer
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    // Generate filename dengan timestamp
+    const filename = `laporan_komplain_${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`;
+
+    // Set headers untuk file download
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    // PERBAIKAN UTAMA: Gunakan res.send() bukan res.json()
+    return res.send(buffer);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      msg: "Server Error",
+    });
+  }
+};
+
+export const deleteLayanan: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const layanan = await Layanan.findByPk(id);
+    if (!layanan) {
+      return res.status(404).json({
+        msg: "Layanan Tidak Ditemukan",
+      });
+    }
+    await layanan.destroy({
+      force: true,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Terjadi Kesalahan Pada Server",
+    });
+  }
+};
+
+export const editLayanan: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { nama_layanan, deskripsi_layanan } = req.body;
+
+    // validasi data
+
+    // update data
+    const layanan = await Layanan.findByPk(id);
+    if (!layanan) {
+      return res.status(404).json({
+        msg: "Layanan Tidak Ditemukan",
+      });
+    }
+
+    // update data
+    await layanan.update({
+      nama_layanan,
+      deskripsi_layanan,
+    });
+
+    return res.status(200).json({
+      msg: "Layanan Berhasil Diupdate",
+      data: layanan,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Terjadi Kesalahan pada server",
+    });
   }
 };

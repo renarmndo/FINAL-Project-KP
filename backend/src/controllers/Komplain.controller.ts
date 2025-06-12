@@ -4,6 +4,7 @@ import { Op } from "sequelize";
 import { Parser } from "json2csv";
 import User from "../models/User.model";
 import Layanan from "../models/Layanan.models";
+import ResponseModel from "./../models/Response.model";
 
 // gET aLL Complains
 export const getAllComplains: any = async (req: Request, res: Response) => {
@@ -113,7 +114,7 @@ export const getComplainById: any = async (req: Request, res: Response) => {
     const komplainId = req.params.id;
     const komplain = await Komplain.findByPk(komplainId, {
       include: [
-        { model: User, as: "Agent", attributes: ["id", "name", "username"] },
+        { model: User, as: "Agent", attributes: ["name"] },
         { model: User, as: "Handler", attributes: ["id", "name", "username"] },
       ],
     });
@@ -190,7 +191,8 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       alamat_Pelanggan,
       layananId,
       agentId,
-      priority: priority || "medium",
+      handlerId: agentId,
+      priority: priority || "low",
       status: "pending",
       data: fields || {}, // <-- ini bagian yang ditambahkan
     });
@@ -276,82 +278,6 @@ export const updateKomplain: any = async (req: Request, res: Response) => {
 };
 
 // export komplain to csv
-// export const exportKomplainToCsv: any = async (req: Request, res: Response) => {
-//   try {
-//     const { startDate, endDate, status } = req.query;
-//     let where: any = {};
-
-//     //   Apply filters
-//     if (status) where.status = status;
-
-//     //   date filters
-//     if (startDate && endDate) {
-//       where.createdAt = {
-//         [Op.between]: [
-//           new Date(startDate as string),
-//           new Date(endDate as string),
-//         ],
-//       };
-//     } else if (startDate) {
-//       where.createdAt = { [Op.gte]: new Date(startDate as string) };
-//     } else if (endDate) {
-//       where.createdAt = { [Op.lte]: new Date(endDate as string) };
-//     }
-
-//     const komplain = await Komplain.findAll({
-//       where,
-//       include: [
-//         { model: User, as: "Agent", attributes: ["name"] },
-//         { model: User, as: "Handler", attributes: ["name"] },
-//       ],
-//       raw: true,
-//       nest: true,
-//     });
-
-//     //   transform komplain to csv
-//     const formattedData: any = komplain.map((item) => ({
-//       id: item.id,
-//       msisdn: item.msisdn,
-//       title: item.title,
-//       description: item.description,
-//       priority: item.priority,
-//       status: item.status,
-//       submittedBy: item.agentId,
-//       handlerBy: item.handlerId,
-//       createdAt: new Date(item.createdAt ?? "").toLocaleString(),
-//       updatedAt: new Date(item.updatedAt ?? "").toLocaleString(),
-//     }));
-
-//     //   Configure the csv parser
-//     const json2csvParser = new Parser({
-//       fields: [
-//         { label: "ID", value: "id" },
-//         { label: "Msisdn", value: "msisdn" },
-//         { label: "Title", value: "title" },
-//         { label: "Description", value: "description" },
-//         { label: "Priority", value: "priority" },
-//         { label: "Status", value: "status" },
-//         { label: "Submitted By", value: "submittedBy" },
-//         { label: "Handled By", value: "handledBy" },
-//         { label: "Created At", value: "createdAt" },
-//         { label: "Updated At", value: "updatedAt" },
-//       ],
-//     });
-//     const csv = json2csvParser.parse(formattedData);
-
-//     //   set hedaers for file download
-//     res.header("Content-Type", "text/cvs");
-//     res.attachment(
-//       `komplain-report-${new Date().toISOString().split("T")[0]}.csv`
-//     );
-//     res.status(200).json(csv);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({
-//       msg: "Server Error",
-//     });
-//   }
-// };
 
 // Get Komplain By Agent
 export const getMyKomplain: any = async (req: Request, res: Response) => {
@@ -367,13 +293,18 @@ export const getMyKomplain: any = async (req: Request, res: Response) => {
       komplainList = await Komplain.findAll({
         where: { agentId: userId },
         include: [
-          { model: User, as: "Agent", attributes: ["id", "name", "username"] },
+          { model: User, as: "Agent", attributes: ["id", "name"] },
           {
             model: User,
             as: "Handler",
             attributes: ["id", "name", "username"],
           },
           { model: Layanan, as: "layanan", attributes: ["id", "nama_layanan"] },
+          {
+            model: ResponseModel,
+            as: "responses",
+            attributes: ["catatanInternal"],
+          },
         ],
         order: [["createdAt", "DESC"]], // Urutkan dari terbaru
       });
@@ -486,13 +417,14 @@ export const editKomplain: any = async (req: Request, res: Response) => {
       });
     }
 
-    if (
-      existingKomplain.status === "completed" ||
-      existingKomplain.status === "processing"
-    ) {
+    if (existingKomplain.status === "completed") {
       return res.status(403).json({
         msg: "Komplain tidak bisa diupdate karena sedang dalam pengerjaan",
       });
+    }
+
+    if (existingKomplain.status === "rejected") {
+      updatData.status = "processing";
     }
 
     // lakukan update

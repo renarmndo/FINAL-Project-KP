@@ -381,7 +381,7 @@ const TambahDataKomplain = () => {
               <div className="space-y-2">
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                   <Building2 className="w-4 h-4 mr-2 text-red-600" />
-                  Nomor Indihome <span className="text-red-500 ml-1">*</span>
+                  MSISDN <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
                   type="number"
@@ -389,7 +389,7 @@ const TambahDataKomplain = () => {
                   value={formData.nomor_Indihome}
                   onChange={handleChange}
                   className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                  placeholder="Masukkan nomor Indihome"
+                  placeholder="Masukkan nomor msisdn"
                   required
                 />
               </div>

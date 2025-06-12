@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { Lock } from "lucide-react";
 
 export const PengaturanDashboard = () => {
-  const soon = true;
-
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto">

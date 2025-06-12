@@ -5,6 +5,9 @@ import {
   getAllFields,
   getAllKomplainCompleted,
   createUser,
+  reportKomplainCsv,
+  deleteLayanan,
+  editLayanan,
 } from "../controllers/Leader.controller";
 import { createFieldLayanan } from "../controllers/Leader.controller";
 
@@ -26,5 +29,14 @@ router.get(
 );
 
 router.post("/create-user/leader", authorized("leader"), createUser);
+
+// report to csv
+router.get("/report-csv", authorized("leader"), reportKomplainCsv);
+
+// delete layanan
+router.delete("/layanan/:id/delete", authorized("leader"), deleteLayanan);
+
+// edit layanan
+router.patch("/layanan/:id/edit", authorized("leader"), editLayanan);
 
 export default router;

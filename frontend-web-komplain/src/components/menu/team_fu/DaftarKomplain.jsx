@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { responseKomplain } from "../../../service/getMyComplain";
+import {
+  responseKomplain,
+  rejectedKomplain,
+} from "../../../service/getMyComplain";
 import Swal from "sweetalert2";
 
 export const DaftarKomplain = () => {
@@ -80,11 +83,16 @@ export const DaftarKomplain = () => {
       return;
     }
 
-    // Check if complaint is already completed
-    if (selectedKomplain.status === "completed") {
+    // Check if complaint is already completed or rejected
+    if (
+      selectedKomplain.status === "completed" ||
+      selectedKomplain.status === "rejected"
+    ) {
       Swal.fire({
         title: "Tidak Dapat Merespon",
-        text: "Komplain ini sudah selesai dan tidak dapat diberikan response lagi.",
+        text: `Komplain ini sudah ${
+          selectedKomplain.status === "completed" ? "selesai" : "ditolak"
+        } dan tidak dapat diberikan response lagi.`,
         icon: "warning",
         confirmButtonText: "OK",
         confirmButtonColor: "#d33",
@@ -141,6 +149,99 @@ export const DaftarKomplain = () => {
     }
   };
 
+  // Handle reject komplain
+  const handleRejectKomplain = async () => {
+    if (!selectedKomplain || !selectedKomplain.id) {
+      Swal.fire("Gagal", "Silahakan pilih komplain terlebih dahulu.", "error");
+      return;
+    }
+
+    // Check if complaint is already completed or rejected
+    if (
+      selectedKomplain.status === "completed" ||
+      selectedKomplain.status === "rejected"
+    ) {
+      Swal.fire({
+        title: "Tidak Dapat Menolak",
+        text: `Komplain ini sudah ${
+          selectedKomplain.status === "completed" ? "selesai" : "ditolak"
+        } sebelumnya.`,
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#d33",
+      });
+      return;
+    }
+
+    if (!catatanInternal.trim()) {
+      Swal.fire(
+        "Gagal",
+        "Catatan internal harus diisi untuk menolak komplain",
+        "error"
+      );
+      return;
+    }
+
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: "Konfirmasi Penolakan",
+      text: "Apakah Anda yakin ingin menolak komplain ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Tolak",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      // Show loading
+      Swal.fire({
+        title: "Menolak Komplain...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      await rejectedKomplain(selectedKomplain.id, catatanInternal);
+
+      // Update status locally for real-time update
+      setDataKomplain((prevData) =>
+        prevData.map((item) =>
+          item.id === selectedKomplain.id
+            ? { ...item, status: "rejected" }
+            : item
+        )
+      );
+
+      // Also update the selected komplain
+      setSelectedKomplain((prev) => ({ ...prev, status: "rejected" }));
+
+      // Close modal and reset form
+      setShowModal(false);
+      setJawaban("");
+      setCatatanInternal("");
+
+      Swal.fire("Berhasil", "Komplain berhasil ditolak.", "success");
+
+      // Refresh data from server to ensure consistency
+      await refreshData();
+
+      setSelectedKomplain(null);
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        error.response?.data?.msg || "Terjadi kesalahan saat menolak komplain.",
+        "error"
+      );
+    }
+  };
+
   // Filter and search logic
   const filteredData = dataKomplain.filter((item) => {
     const matchesSearch =
@@ -172,6 +273,7 @@ export const DaftarKomplain = () => {
       .length,
     completed: dataKomplain.filter((item) => item.status === "completed")
       .length,
+    rejected: dataKomplain.filter((item) => item.status === "rejected").length,
   };
 
   const formatDate = (dateString) => {
@@ -209,10 +311,10 @@ export const DaftarKomplain = () => {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Daftar Komplain
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 mt-1 text-sm">
                 Kelola dan pantau semua komplain pelanggan
               </p>
               {error && (
@@ -228,7 +330,7 @@ export const DaftarKomplain = () => {
 
       {/* Statistics Cards */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-gray-400">
             <h3 className="text-sm font-medium text-gray-600">Total</h3>
             <p className="text-2xl font-bold text-gray-700">{stats.total}</p>
@@ -250,6 +352,10 @@ export const DaftarKomplain = () => {
             <p className="text-2xl font-bold text-green-500">
               {stats.completed}
             </p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-400">
+            <h3 className="text-sm font-medium text-gray-600">Ditolak</h3>
+            <p className="text-2xl font-bold text-red-500">{stats.rejected}</p>
           </div>
         </div>
 
@@ -287,6 +393,7 @@ export const DaftarKomplain = () => {
                 <option value="pending">Pending</option>
                 <option value="processing">Dalam Proses</option>
                 <option value="completed">Selesai</option>
+                <option value="rejected">Ditolak</option>
               </select>
             </div>
           </div>
@@ -299,7 +406,7 @@ export const DaftarKomplain = () => {
               <thead className="bg-gradient-to-r from-red-50 to-white border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-red-700 uppercase tracking-wider">
-                    No Indihome
+                    Msisdn
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-red-700 uppercase tracking-wider">
                     Nama Pelanggan
@@ -308,13 +415,10 @@ export const DaftarKomplain = () => {
                     No Telepon
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-red-700 uppercase tracking-wider">
-                    Deskripsi
+                    Email
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-red-700 uppercase tracking-wider">
                     Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-red-700 uppercase tracking-wider">
-                    Prioritas
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-red-700 uppercase tracking-wider">
                     Handler
@@ -331,7 +435,7 @@ export const DaftarKomplain = () => {
                 {currentData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="9"
+                      colSpan="8"
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       <div className="flex flex-col items-center">
@@ -385,6 +489,8 @@ export const DaftarKomplain = () => {
                               ? "bg-orange-100 text-orange-800 border border-orange-200"
                               : item.status === "completed"
                               ? "bg-green-100 text-green-800 border border-green-200"
+                              : item.status === "rejected"
+                              ? "bg-red-100 text-red-800 border border-red-200"
                               : item.status === "processing"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
                               : "bg-gray-100 text-gray-800 border border-gray-200"
@@ -393,27 +499,16 @@ export const DaftarKomplain = () => {
                           {item.status === "pending"
                             ? "Pending"
                             : item.status === "processing"
-                            ? "Proses"
+                            ? "Revised"
                             : item.status === "completed"
-                            ? "Completed"
+                            ? "Approved"
+                            : item.status === "rejected"
+                            ? "Rejected"
                             : item.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                            item.priority === "high"
-                              ? "bg-red-100 text-red-800 border border-red-200"
-                              : item.priority === "medium"
-                              ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                              : "bg-green-100 text-green-800 border border-green-200"
-                          }`}
-                        >
-                          {item.priority}
-                        </span>
-                      </td>
                       <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                        {item.handler?.name}
+                        {item.Handler?.name || "-"}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {formatDate(item.createdAt)}
@@ -433,7 +528,7 @@ export const DaftarKomplain = () => {
             </table>
           </div>
 
-          {/* Pagination */}
+          {/* Pagination - sama seperti sebelumnya */}
           {totalPages > 1 && (
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div className="flex items-center justify-between">
@@ -542,7 +637,7 @@ export const DaftarKomplain = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      No Indihome
+                      Msisdn
                     </label>
                     <p className="mt-1 text-sm text-gray-900 font-mono">
                       {selectedKomplain.nomor_Indohome ||
@@ -562,8 +657,7 @@ export const DaftarKomplain = () => {
                       No Telepon
                     </label>
                     <p className="mt-1 text-sm text-gray-900">
-                      {selectedKomplain.noTlp_Pelanggan ||
-                        selectedKomplain.description}
+                      {selectedKomplain.noTlp_Pelanggan}
                     </p>
                   </div>
                   <div>
@@ -584,6 +678,8 @@ export const DaftarKomplain = () => {
                           ? "bg-orange-100 text-orange-800"
                           : selectedKomplain.status === "completed"
                           ? "bg-green-100 text-green-800"
+                          : selectedKomplain.status === "rejected"
+                          ? "bg-red-100 text-red-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
@@ -593,6 +689,8 @@ export const DaftarKomplain = () => {
                         ? "Proses"
                         : selectedKomplain.status === "completed"
                         ? "Selesai"
+                        : selectedKomplain.status === "rejected"
+                        ? "Ditolak"
                         : selectedKomplain.status}
                     </span>
                   </div>
@@ -626,44 +724,67 @@ export const DaftarKomplain = () => {
                   </div>
                 </div>
 
-                {/* Show response form only if status is not completed */}
-                {selectedKomplain.status !== "completed" && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Berikan Response
-                    </label>
-                    <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      rows="4"
-                      placeholder="Tulis balasan untuk komplain ini..."
-                      value={jawaban}
-                      onChange={(e) => setJawaban(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                {/* Show message if already completed */}
-                {selectedKomplain.status === "completed" && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center">
-                      <svg
-                        className="w-5 h-5 text-green-600 mr-2"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
+                {/* Show response form only if status is not completed or rejected */}
+                {selectedKomplain.status !== "completed" &&
+                  selectedKomplain.status !== "rejected" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Berikan Response
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                          rows="4"
+                          placeholder="Tulis balasan untuk komplain ini..."
+                          value={jawaban}
+                          onChange={(e) => setJawaban(e.target.value)}
                         />
-                      </svg>
-                      <p className="text-sm font-medium text-green-800">
-                        Komplain ini sudah selesai dan tidak dapat diberikan
-                        response lagi.
-                      </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Catatan Internal
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                          rows="4"
+                          placeholder="Tulis catatan internal (opsional untuk respon, wajib untuk penolakan)..."
+                          value={catatanInternal}
+                          onChange={(e) => setCatatanInternal(e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                {/* Show previous response if completed */}
+                {selectedKomplain.status === "completed" &&
+                  selectedKomplain.response && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Respon Sebelumnya
+                      </label>
+                      <div className="mt-1 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-900">
+                          {selectedKomplain.response}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                {/* Show rejection note if rejected */}
+                {selectedKomplain.status === "rejected" &&
+                  selectedKomplain.catatanInternal && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Catatan Penolakan
+                      </label>
+                      <div className="mt-1 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-900">
+                          {selectedKomplain.catatanInternal}
+                        </p>
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -675,20 +796,29 @@ export const DaftarKomplain = () => {
                     setShowModal(false);
                     setJawaban("");
                     setCatatanInternal("");
+                    setSelectedKomplain(null);
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
                 >
-                  {selectedKomplain.status === "completed" ? "Tutup" : "Batal"}
+                  Tutup
                 </button>
-                {selectedKomplain.status !== "completed" && (
-                  <button
-                    onClick={handleBalasanSubmit}
-                    disabled={!jawaban.trim()}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                  >
-                    Kirim Response
-                  </button>
-                )}
+                {selectedKomplain.status !== "completed" &&
+                  selectedKomplain.status !== "rejected" && (
+                    <>
+                      <button
+                        onClick={handleRejectKomplain}
+                        className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                      >
+                        Tolak Komplain
+                      </button>
+                      <button
+                        onClick={handleBalasanSubmit}
+                        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+                      >
+                        Kirim Respon
+                      </button>
+                    </>
+                  )}
               </div>
             </div>
           </div>
@@ -697,3 +827,5 @@ export const DaftarKomplain = () => {
     </div>
   );
 };
+
+export default DaftarKomplain;

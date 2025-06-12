@@ -146,7 +146,7 @@ export const FollowUpData = () => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get(`${API_URL}/teamfu/komplain`, {
+        const response = await axios.get(`${API_URL}/teamfu/komplain/handler`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -199,7 +199,7 @@ export const FollowUpData = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Nomor IndiHome
+                    MSISDN
                   </label>
                   <p className="text-lg font-semibold text-gray-900">
                     {selectedData.nomor_Indihome}
@@ -302,22 +302,12 @@ export const FollowUpData = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Follow Up Completed
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Daftar Data Follow Up
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-sm text-gray-600">
                 Data pelanggan IndiHome yang telah diselesaikan
               </p>
-            </div>
-            <div className="hidden sm:flex items-center space-x-3">
-              <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </button>
-              <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl text-sm font-medium hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-sm hover:shadow-md">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </button>
             </div>
           </div>
         </div>
@@ -447,7 +437,7 @@ export const FollowUpData = () => {
                       onClick={() => handleSort("nomor_Indihome")}
                       className="group flex items-center gap-2 hover:text-red-600 transition-colors duration-200"
                     >
-                      Nomor IndiHome
+                      MSISDN
                       <SortIcon column="nomor_Indihome" />
                     </button>
                   </th>

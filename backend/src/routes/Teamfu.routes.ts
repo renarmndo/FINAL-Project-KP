@@ -3,6 +3,8 @@ import {
   getKomplain,
   assignHandler,
   responseKomplain,
+  komplainRejected,
+  getDataById,
 } from "../controllers/teamfu.controller";
 import { protect, authorized } from "../middleware/Auth.Middleware";
 
@@ -24,5 +26,14 @@ router.post(
   authorized("team_fu"),
   responseKomplain
 );
+
+router.patch(
+  "/komplain/:komplainId/rejected",
+  authorized("team_fu"),
+  komplainRejected
+);
+
+// get komplain by handler
+router.get("/komplain/handler", authorized("team_fu"), getDataById);
 
 export default router;

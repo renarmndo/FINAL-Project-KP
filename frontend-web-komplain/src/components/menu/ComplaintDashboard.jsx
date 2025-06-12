@@ -125,6 +125,7 @@ export const ComplaintDashboard = () => {
     if (!status || status === "pending") return "Belum Dikerjakan";
     if (status === "completed") return "Sudah di-respons";
     if (status === "processing") return "Sedang Diproses";
+    if (status === "rejected") return "Di Tolak";
     return "Status Belum Diverifikasi";
   };
 
@@ -381,6 +382,7 @@ export const ComplaintDashboard = () => {
                     <option value="all">Semua Status</option>
                     <option value="pending">Belum Dikerjakan</option>
                     <option value="processing">Sedang Diproses</option>
+                    <option value="rejected">Di Tolak</option>
                     <option value="completed">Sudah Selesai</option>
                   </select>
                 </div>
@@ -400,7 +402,7 @@ export const ComplaintDashboard = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        No Indihome
+                        Msisdn
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nama Pelanggan

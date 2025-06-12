@@ -10,7 +10,7 @@ interface ResponseAttributes {
   handlerId: string | null;
   jawaban: string;
   catatanInternal?: string;
-  status: "pending" | "processing" | "completed";
+  status: "pending" | "processing" | "completed" | "rejected";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,7 +27,7 @@ class Response
   public handlerId!: string | null;
   public jawaban!: string;
   public catatanInternal?: string;
-  public status!: "pending" | "processing" | "completed";
+  public status!: "pending" | "processing" | "completed" | "rejected";
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -64,7 +64,7 @@ Response.init(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM("pending", "processing", "completed"),
+      type: DataTypes.ENUM("pending", "processing", "completed", "rejected"),
       allowNull: false,
       defaultValue: "pending",
     },
