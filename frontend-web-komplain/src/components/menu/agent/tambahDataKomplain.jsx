@@ -29,6 +29,7 @@ const TambahDataKomplain = () => {
     noTlp_Pelanggan: "",
     email_Pelanggan: "",
     alamat_Pelanggan: "",
+    notes: "",
     layananId: selectedLayanan,
     priority: "medium",
     fields: {},
@@ -225,6 +226,7 @@ const TambahDataKomplain = () => {
       noTlp_Pelanggan: "",
       email_Pelanggan: "",
       alamat_Pelanggan: "",
+      notes: "",
       layananId: "",
       priority: "",
       fields: {},
@@ -483,6 +485,20 @@ const TambahDataKomplain = () => {
                 className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 resize-none bg-gray-50 focus:bg-white"
                 rows="4"
                 placeholder="Masukkan alamat lengkap termasuk kode pos..."
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                <MapPin className="w-4 h-4 mr-2 text-red-600" />
+                Deskripsi Komplain
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 resize-none bg-gray-50 focus:bg-white"
+                rows="4"
+                placeholder="Jelaskan masalah yang dialami..."
               />
             </div>
 

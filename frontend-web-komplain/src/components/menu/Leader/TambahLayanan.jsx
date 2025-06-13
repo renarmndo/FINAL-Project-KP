@@ -18,6 +18,8 @@ export const TambahLayanan = () => {
   });
   const [showFieldForm, setShowFieldForm] = useState(false);
   const [loadingField, setLoadingField] = useState(false);
+  // const [namaLayanan, setNamaLayanan] = useState([]);
+  // const [deskripsiLayanan, setDeskripsiLayanan] = useState([]);
 
   useEffect(() => {
     fetchLayanan();
@@ -239,7 +241,7 @@ export const TambahLayanan = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Label Field
+                    Nama Field
                   </label>
                   <input
                     type="text"
@@ -255,7 +257,7 @@ export const TambahLayanan = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nama Field
+                    Deskripsi Field
                   </label>
                   <input
                     type="text"

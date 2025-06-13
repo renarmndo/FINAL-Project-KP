@@ -15,6 +15,7 @@ interface KomplainAtributes {
   data: Record<string, any>;
   priority: "high" | "medium" | "low";
   status: "pending" | "processing" | "completed" | "rejected";
+  notes: string;
   agentId: string;
   handlerId?: string | null;
   createdAt?: Date;
@@ -38,6 +39,7 @@ class Komplain
   public data!: Record<string, any>;
   public priority!: "high" | "medium" | "low";
   public status!: "pending" | "processing" | "completed" | "rejected";
+  public notes!: string;
   public agentId!: string;
   public handlerId?: string | null;
 
@@ -93,6 +95,10 @@ Komplain.init(
       type: DataTypes.ENUM("pending", "processing", "completed", "rejected"),
       allowNull: false,
       defaultValue: "pending",
+    },
+    notes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     agentId: {
       type: DataTypes.UUID,

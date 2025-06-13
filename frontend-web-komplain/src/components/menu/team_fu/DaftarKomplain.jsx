@@ -77,13 +77,83 @@ export const DaftarKomplain = () => {
   };
 
   // state response komplain
+  // const handleBalasanSubmit = async () => {
+  //   if (!selectedKomplain || !selectedKomplain.id) {
+  //     Swal.fire("Gagal", "Silahakan pilih komplain terlebih dahulu.", "error");
+  //     return;
+  //   }
+
+  //   // Check if complaint is already completed or rejected
+  //   if (
+  //     selectedKomplain.status === "completed" ||
+  //     selectedKomplain.status === "rejected"
+  //   ) {
+  //     Swal.fire({
+  //       title: "Tidak Dapat Merespon",
+  //       text: `Komplain ini sudah ${
+  //         selectedKomplain.status === "completed" ? "selesai" : "ditolak"
+  //       } dan tidak dapat diberikan response lagi.`,
+  //       icon: "warning",
+  //       confirmButtonText: "OK",
+  //       confirmButtonColor: "#d33",
+  //     });
+  //     return;
+  //   }
+
+  //   if (!jawaban.trim()) {
+  //     Swal.fire("Gagal", "Jawaban tidak boleh kosong", "error");
+  //     return;
+  //   }
+
+  //   try {
+  //     // Show loading
+  //     Swal.fire({
+  //       title: "Mengirim Response...",
+  //       allowOutsideClick: false,
+  //       didOpen: () => {
+  //         Swal.showLoading();
+  //       },
+  //     });
+
+  //     await responseKomplain(selectedKomplain.id, jawaban, catatanInternal);
+
+  //     // Update status locally for real-time update
+  //     setDataKomplain((prevData) =>
+  //       prevData.map((item) =>
+  //         item.id === selectedKomplain.id
+  //           ? { ...item, status: "completed" }
+  //           : item
+  //       )
+  //     );
+
+  //     // Also update the selected komplain
+  //     setSelectedKomplain((prev) => ({ ...prev, status: "completed" }));
+
+  //     // Close modal and reset form
+  //     setShowModal(false);
+  //     setJawaban("");
+  //     setCatatanInternal("");
+
+  //     Swal.fire("Berhasil", "Respon komplain berhasil dikirim.", "success");
+
+  //     // Refresh data from server to ensure consistency
+  //     await refreshData();
+
+  //     setSelectedKomplain(null);
+  //   } catch (error) {
+  //     Swal.fire(
+  //       "Error",
+  //       error.response?.data?.msg || "Terjadi kesalahan saat mengirim respon.",
+  //       "error"
+  //     );
+  //   }
+  // };
   const handleBalasanSubmit = async () => {
     if (!selectedKomplain || !selectedKomplain.id) {
       Swal.fire("Gagal", "Silahakan pilih komplain terlebih dahulu.", "error");
       return;
     }
 
-    // Check if complaint is already completed or rejected
     if (
       selectedKomplain.status === "completed" ||
       selectedKomplain.status === "rejected"
@@ -105,8 +175,18 @@ export const DaftarKomplain = () => {
       return;
     }
 
+    // Validasi tambahan: catatan rejected harus kosong
+    if (catatanInternal.trim()) {
+      Swal.fire({
+        title: "Gagal",
+        text: "Catatan rejected tidak boleh diisi ketika memberikan response",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
     try {
-      // Show loading
       Swal.fire({
         title: "Mengirim Response...",
         allowOutsideClick: false,
@@ -117,7 +197,6 @@ export const DaftarKomplain = () => {
 
       await responseKomplain(selectedKomplain.id, jawaban, catatanInternal);
 
-      // Update status locally for real-time update
       setDataKomplain((prevData) =>
         prevData.map((item) =>
           item.id === selectedKomplain.id
@@ -126,19 +205,13 @@ export const DaftarKomplain = () => {
         )
       );
 
-      // Also update the selected komplain
       setSelectedKomplain((prev) => ({ ...prev, status: "completed" }));
-
-      // Close modal and reset form
       setShowModal(false);
       setJawaban("");
       setCatatanInternal("");
 
       Swal.fire("Berhasil", "Respon komplain berhasil dikirim.", "success");
-
-      // Refresh data from server to ensure consistency
       await refreshData();
-
       setSelectedKomplain(null);
     } catch (error) {
       Swal.fire(
@@ -150,13 +223,103 @@ export const DaftarKomplain = () => {
   };
 
   // Handle reject komplain
+  // const handleRejectKomplain = async () => {
+  //   if (!selectedKomplain || !selectedKomplain.id) {
+  //     Swal.fire("Gagal", "Silahakan pilih komplain terlebih dahulu.", "error");
+  //     return;
+  //   }
+
+  //   // Check if complaint is already completed or rejected
+  //   if (
+  //     selectedKomplain.status === "completed" ||
+  //     selectedKomplain.status === "rejected"
+  //   ) {
+  //     Swal.fire({
+  //       title: "Tidak Dapat Menolak",
+  //       text: `Komplain ini sudah ${
+  //         selectedKomplain.status === "completed" ? "selesai" : "ditolak"
+  //       } sebelumnya.`,
+  //       icon: "warning",
+  //       confirmButtonText: "OK",
+  //       confirmButtonColor: "#d33",
+  //     });
+  //     return;
+  //   }
+
+  //   if (!catatanInternal.trim()) {
+  //     Swal.fire(
+  //       "Gagal",
+  //       "Catatan internal harus diisi untuk menolak komplain",
+  //       "error"
+  //     );
+  //     return;
+  //   }
+
+  //   // Show confirmation dialog
+  //   const result = await Swal.fire({
+  //     title: "Konfirmasi Penolakan",
+  //     text: "Apakah Anda yakin ingin menolak komplain ini?",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#dc2626",
+  //     cancelButtonColor: "#6b7280",
+  //     confirmButtonText: "Ya, Tolak",
+  //     cancelButtonText: "Batal",
+  //   });
+
+  //   if (!result.isConfirmed) {
+  //     return;
+  //   }
+
+  //   try {
+  //     // Show loading
+  //     Swal.fire({
+  //       title: "Menolak Komplain...",
+  //       allowOutsideClick: false,
+  //       didOpen: () => {
+  //         Swal.showLoading();
+  //       },
+  //     });
+
+  //     await rejectedKomplain(selectedKomplain.id, catatanInternal);
+
+  //     // Update status locally for real-time update
+  //     setDataKomplain((prevData) =>
+  //       prevData.map((item) =>
+  //         item.id === selectedKomplain.id
+  //           ? { ...item, status: "rejected" }
+  //           : item
+  //       )
+  //     );
+
+  //     // Also update the selected komplain
+  //     setSelectedKomplain((prev) => ({ ...prev, status: "rejected" }));
+
+  //     // Close modal and reset form
+  //     setShowModal(false);
+  //     setJawaban("");
+  //     setCatatanInternal("");
+
+  //     Swal.fire("Berhasil", "Komplain berhasil ditolak.", "success");
+
+  //     // Refresh data from server to ensure consistency
+  //     await refreshData();
+
+  //     setSelectedKomplain(null);
+  //   } catch (error) {
+  //     Swal.fire(
+  //       "Error",
+  //       error.response?.data?.msg || "Terjadi kesalahan saat menolak komplain.",
+  //       "error"
+  //     );
+  //   }
+  // };
   const handleRejectKomplain = async () => {
     if (!selectedKomplain || !selectedKomplain.id) {
       Swal.fire("Gagal", "Silahakan pilih komplain terlebih dahulu.", "error");
       return;
     }
 
-    // Check if complaint is already completed or rejected
     if (
       selectedKomplain.status === "completed" ||
       selectedKomplain.status === "rejected"
@@ -173,6 +336,17 @@ export const DaftarKomplain = () => {
       return;
     }
 
+    // Validasi tambahan: jawaban harus kosong
+    if (jawaban.trim()) {
+      Swal.fire({
+        title: "Gagal",
+        text: "Response tidak boleh diisi ketika menolak komplain",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
     if (!catatanInternal.trim()) {
       Swal.fire(
         "Gagal",
@@ -182,7 +356,6 @@ export const DaftarKomplain = () => {
       return;
     }
 
-    // Show confirmation dialog
     const result = await Swal.fire({
       title: "Konfirmasi Penolakan",
       text: "Apakah Anda yakin ingin menolak komplain ini?",
@@ -199,7 +372,6 @@ export const DaftarKomplain = () => {
     }
 
     try {
-      // Show loading
       Swal.fire({
         title: "Menolak Komplain...",
         allowOutsideClick: false,
@@ -210,7 +382,6 @@ export const DaftarKomplain = () => {
 
       await rejectedKomplain(selectedKomplain.id, catatanInternal);
 
-      // Update status locally for real-time update
       setDataKomplain((prevData) =>
         prevData.map((item) =>
           item.id === selectedKomplain.id
@@ -219,19 +390,13 @@ export const DaftarKomplain = () => {
         )
       );
 
-      // Also update the selected komplain
       setSelectedKomplain((prev) => ({ ...prev, status: "rejected" }));
-
-      // Close modal and reset form
       setShowModal(false);
       setJawaban("");
       setCatatanInternal("");
 
       Swal.fire("Berhasil", "Komplain berhasil ditolak.", "success");
-
-      // Refresh data from server to ensure consistency
       await refreshData();
-
       setSelectedKomplain(null);
     } catch (error) {
       Swal.fire(
@@ -701,10 +866,10 @@ export const DaftarKomplain = () => {
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize mt-1 ${
                         selectedKomplain.priority === "low"
-                          ? "bg-red-100 text-red-800"
+                          ? "bg-green-100 text-green-800"
                           : selectedKomplain.priority === "medium"
                           ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
                       }`}
                     >
                       {selectedKomplain.priority}
@@ -714,12 +879,22 @@ export const DaftarKomplain = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Deskripsi Komplain
+                    Komplain Layanan
                   </label>
                   <div className="mt-1 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-900">
                       {selectedKomplain.layanan?.nama_layanan ||
                         "Tidak ada deskripsi"}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Deskripsi Komplain
+                  </label>
+                  <div className="mt-1 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-900">
+                      {selectedKomplain.notes || "Tidak ada deskripsi"}
                     </p>
                   </div>
                 </div>
@@ -731,6 +906,11 @@ export const DaftarKomplain = () => {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Berikan Response
+                          {catatanInternal.trim() && (
+                            <span className="text-red-500 text-xs ml-2">
+                              (Harus kosong jika ingin menolak komplain)
+                            </span>
+                          )}
                         </label>
                         <textarea
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -743,7 +923,12 @@ export const DaftarKomplain = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Catatan Internal
+                          Catatan Rejected
+                          {jawaban.trim() && (
+                            <span className="text-red-500 text-xs ml-2">
+                              (Harus kosong jika ingin memberikan response)
+                            </span>
+                          )}
                         </label>
                         <textarea
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"

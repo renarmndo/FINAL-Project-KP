@@ -12,7 +12,7 @@ export const ResponseKomplain = ({
 
   // Fungsi untuk mengecek apakah response data valid
   const hasValidResponseData = () => {
-    console.log("Checking responseData:", responseData);
+    // console.log("Checking responseData:", responseData);
 
     if (!responseData) {
       console.log("No responseData");
@@ -32,11 +32,11 @@ export const ResponseKomplain = ({
       (responseData.id && responseData.komplainId)
     );
 
-    console.log("Has valid data:", hasValidData);
-    console.log("jawaban:", responseData.jawaban);
-    console.log("message:", responseData.message);
-    console.log("id:", responseData.id);
-    console.log("komplainId:", responseData.komplainId);
+    // console.log("Has valid data:", hasValidData);
+    // console.log("jawaban:", responseData.jawaban);
+    // console.log("message:", responseData.message);
+    // console.log("id:", responseData.id);
+    // console.log("komplainId:", responseData.komplainId);
 
     return hasValidData;
   };
@@ -114,11 +114,11 @@ export const ResponseKomplain = ({
                   responseData?.layanan.nama_layanan ||
                   "N/A"}
               </p>
-              <p className="text-gray-700 mt-1">
-                {complaint?.layanan.catatanInternal ||
-                  complaint?.layanan.catatanInternal ||
-                  "Tidak ada Keterangan"}
-              </p>
+              <div className="mt-2">
+                <p className="text-gray-500 mt-1">
+                  {complaint.notes || complaint.notes || "Tidak ada Keterangan"}
+                </p>
+              </div>
             </div>
 
             {/* Status */}

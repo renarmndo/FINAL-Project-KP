@@ -8,6 +8,7 @@ import {
   Mail,
   MapPin,
   FileText,
+  MessageCircleWarning,
   Calendar,
   MessageSquare,
 } from "lucide-react";
@@ -20,6 +21,7 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
     noTlp_Pelanggan: "",
     email_Pelanggan: "",
     alamat_Pelanggan: "",
+    notes: "",
     priority: "medium",
     catatanInternal: "",
   });
@@ -40,6 +42,7 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
         noTlp_Pelanggan: komplain.noTlp_Pelanggan || "",
         email_Pelanggan: komplain.email_Pelanggan || "",
         alamat_Pelanggan: komplain.alamat_Pelanggan || "",
+        notes: komplain.notes || "Tidak ada catatan",
         priority: komplain.priority || "medium",
         catatanInternal: catatanInternal,
       });
@@ -296,6 +299,30 @@ export const EditKomplainPopUp = ({ komplain, onClose, onSave }) => {
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <AlertCircle size={14} className="mr-1" />
                     {errors.alamat_Pelanggan}
+                  </p>
+                )}
+              </div>
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <MessageCircleWarning size={16} className="inline mr-1" />
+                  Deskripsi Keluhan Layanan*
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className={`w-full px-4 py-3 border text-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors resize-none ${
+                    errors.notes
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Daftar keluhan layanan"
+                />
+                {errors.notes && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle size={14} className="mr-1" />
+                    {errors.notes}
                   </p>
                 )}
               </div>

@@ -75,3 +75,23 @@ export const rejectedKomplain = async (komplainId, catatanInternal) => {
     throw error;
   }
 };
+
+export const editLayanan = async (id, data) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.patch(
+      `${API_URL}/leader/layanan/${id}/edit`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

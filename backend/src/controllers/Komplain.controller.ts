@@ -154,6 +154,7 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       layananId,
       priority,
       fields, // ambil fields dari body
+      notes,
     } = req.body;
 
     const agentId = req.user.id;
@@ -167,7 +168,8 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       !alamat_Pelanggan ||
       !layananId ||
       !priority ||
-      !agentId
+      !agentId ||
+      !notes
     ) {
       return res.status(400).json({ message: "Semua Data wajib diisi" });
     }
@@ -178,7 +180,7 @@ export const createKomplain: any = async (req: Request, res: Response) => {
 
     if (existingMsisdn) {
       return res.status(400).json({
-        msg: "Nomor indihome Sudah terdaftar",
+        msg: "Nomor anda sudah terdaftar",
       });
     }
 
@@ -191,6 +193,7 @@ export const createKomplain: any = async (req: Request, res: Response) => {
       alamat_Pelanggan,
       layananId,
       agentId,
+      notes,
       handlerId: agentId,
       priority: priority || "low",
       status: "pending",
@@ -440,3 +443,5 @@ export const editKomplain: any = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const dataKomplain: any = (req: Request, res: Request) => {};

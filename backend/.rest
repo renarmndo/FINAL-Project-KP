@@ -271,7 +271,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1L
 ###
 PATCH http://localhost:5000/webKp/leader/layanan/d88601d1-3015-4b17-a9dc-fb9d7156e19f/edit
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1LTAwODAtNDc0Ni1hODNmLTkxYjNmMDNkNGJlNiIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDk3MzgzMDJ9.k2eoZfk0heKKp1jjKeB4i0JZJT8zaA_K0joEt52Y6Ho
-
 Content-Type: application/json
 
 {
