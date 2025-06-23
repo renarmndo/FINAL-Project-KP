@@ -277,3 +277,8 @@ Content-Type: application/json
     "nama_layanan":"Ganti Paket Data",
     "deskripsi_layanan":"Ganti paket data disini"
 }
+
+
+###
+DELETE http://localhost:5000/webKp/leader/layanan/7f6c45b8-8a2f-439c-a2a8-443f7f7a00b9/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViZGQwZGI1LTAwODAtNDc0Ni1hODNmLTkxYjNmMDNkNGJlNiIsInJvbGUiOiJsZWFkZXIiLCJpYXQiOjE3NDk3MzgzMDJ9.k2eoZfk0heKKp1jjKeB4i0JZJT8zaA_K0joEt52Y6Ho

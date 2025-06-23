@@ -3,6 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { API_URL } from "../../../auth/authService";
 import { FaSortUp, FaSortDown, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { deleteLayanan, editLayanan } from "../../../service/Index";
 
 export const TambahLayanan = () => {
   const [layananList, setLayananList] = useState([]);
@@ -147,6 +148,40 @@ export const TambahLayanan = () => {
       setLoadingField(false);
     }
   };
+
+  // handle delete layanan
+  const handleDeleteLayanan = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Yakin ingin menghapus?",
+      text: "Data yang dihapus tidak dapat dikembalikan, data layanan dihapus data komplain dan respons juga akan terhapus",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, Hapus",
+    });
+    if (confirm.isConfirmed) {
+      try {
+        const result = await deleteLayanan(id);
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: result.msg || "Layanan berhasil dihapus",
+        });
+
+        // refres data
+        fetchLayanan();
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: error.response?.data?.msg || "terjadi kesalahan pada server",
+        });
+      }
+    }
+  };
+
+  // handle edit layanan
 
   const toggleFieldForm = () => {
     setShowFieldForm(!showFieldForm);
@@ -404,6 +439,7 @@ export const TambahLayanan = () => {
                             <FaEdit size={18} />
                           </button>
                           <button
+                            onClick={() => handleDeleteLayanan(layanan.id)}
                             className="text-red-600 hover:text-red-8  00 p-1 rounded-full hover:bg-red-100 transition-colors"
                             title="Hapus"
                           >

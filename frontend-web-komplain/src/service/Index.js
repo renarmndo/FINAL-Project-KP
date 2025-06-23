@@ -95,3 +95,20 @@ export const editLayanan = async (id, data) => {
     throw error;
   }
 };
+
+// delete layanan
+export const deleteLayanan = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.delete(`${API_URL}/leader/layanan/${id}/delete`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+    // http://localhost:5000/webKp/leader/layanan/7f6c45b8-8a2f-439c-a2a8-443f7f7a00b9/delete
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

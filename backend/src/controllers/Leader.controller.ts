@@ -327,19 +327,59 @@ export const reportKomplainCsv: any = async (req: Request, res: Response) => {
 export const deleteLayanan: any = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    // validasi data
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        msg: "ID layanan tidak ada",
+      });
+      return;
+    }
+
+    // check apakah layanan ada
     const layanan = await Layanan.findByPk(id);
     if (!layanan) {
-      return res.status(404).json({
-        msg: "Layanan Tidak Ditemukan",
+      res.status(400).json({
+        success: false,
+        msg: "Layanan tidak ditemukan",
       });
+      return;
     }
-    await layanan.destroy({
-      force: true,
-    });
+
+    // mulai transaction
+    const transaction = await Layanan.sequelize?.transaction();
+    try {
+      // hapus semua field layanan yang berelasi dengan layanan
+      await LayananField.destroy({
+        where: {
+          layananId: id,
+        },
+        transaction,
+      });
+      // hapus layanan
+      await Layanan.destroy({
+        where: {
+          id: id,
+        },
+        transaction,
+      });
+
+      // commit transaction
+      await transaction?.commit();
+      res.status(200).json({
+        success: true,
+        msg: "Layanan dan field layanan berhasil dihapus",
+      });
+    } catch (error) {
+      await transaction?.rollback();
+      throw error;
+    }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
-      msg: "Terjadi Kesalahan Pada Server",
+    res.status(500).json({
+      success: false,
+      msg: "Terjadi kesalahan pada server",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
@@ -350,29 +390,53 @@ export const editLayanan: any = async (req: Request, res: Response) => {
     const { nama_layanan, deskripsi_layanan } = req.body;
 
     // validasi data
-
-    // update data
-    const layanan = await Layanan.findByPk(id);
-    if (!layanan) {
-      return res.status(404).json({
-        msg: "Layanan Tidak Ditemukan",
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        msg: "ID layanan tidak boleh kosong",
       });
+      return;
     }
 
-    // update data
-    await layanan.update({
-      nama_layanan,
-      deskripsi_layanan,
-    });
+    // validasi data
+    const layanan = await Layanan.findByPk(id);
+    if (!layanan) {
+      res.status(404).json({
+        success: false,
+        msg: "Layanan tidak ditemukan",
+      });
+      return;
+    }
 
-    return res.status(200).json({
-      msg: "Layanan Berhasil Diupdate",
-      data: layanan,
+    // update layanan
+    await Layanan.update(
+      {
+        nama_layanan,
+        deskripsi_layanan,
+      },
+      {
+        where: { id },
+      }
+    );
+
+    // ambil data yang sudah di update
+    const updateLayanan = await Layanan.findByPk(id, {
+      include: [
+        {
+          model: LayananField,
+          as: "fields",
+        },
+      ],
+    });
+    res.status(200).json({
+      success: true,
+      msg: "Layanan berhasil di update",
+      data: updateLayanan,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      msg: "Terjadi Kesalahan pada server",
+      msg: "Terjadi kesalahan pada server",
     });
   }
 };
