@@ -8,6 +8,15 @@ import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.Utils";
 import XLSX from "xlsx";
+
+const VALID_JENIS_LAYANAN = [
+  "tagihan",
+  "produk",
+  "pelayanan",
+  "jaringan",
+  "e-bill",
+  "lain-lain",
+];
 export const getAllFields: any = async (req: Request, res: Response) => {
   try {
     const fields = await Layanan.findAll();
@@ -21,14 +30,98 @@ export const getAllFields: any = async (req: Request, res: Response) => {
 };
 
 export const createField: any = async (req: Request, res: Response) => {
+  // try {
+  //   const { nama_layanan, deskripsi_layanan, jenis_layanan } = req.body;
+  //   if (!Object.values(jenis_layanan).includes(jenis_layanan)) {
+  //     return res.status(400).json({ msg: "Jenis Layanan tidak valid" });
+  //   }
+  //   if (!nama_layanan || !deskripsi_layanan || !jenis_layanan) {
+  //     return res.status(400).json({ msg: "Semua field wajib diisi" });
+  //   }
+  //   // buat layanan
+  //   const field = await Layanan.create({
+  //     nama_layanan,
+  //     deskripsi_layanan,
+  //     jenis_layanan,
+  //   });
+  //   res.status(201).json({
+  //     msg: "Berhasil Menambah Layanan",
+  //     data: field,
+  //   });
+  // } catch (error) {}
+
   try {
-    const { nama_layanan, deskripsi_layanan } = req.body;
-    const field = await Layanan.create({ nama_layanan, deskripsi_layanan });
-    res.status(201).json({
-      msg: "Berhasil Menambah Layanan",
-      data: field,
+    const { nama_layanan, deskripsi_layanan, jenis_layanan } = req.body;
+
+    // Validasi input kosong
+    if (!nama_layanan || !deskripsi_layanan || !jenis_layanan) {
+      return res.status(400).json({
+        message: "Semua field wajib diisi",
+        error: "Missing required fields",
+      });
+    }
+
+    // Validasi jenis layanan - perbaikan logika
+    if (!VALID_JENIS_LAYANAN.includes(jenis_layanan)) {
+      return res.status(400).json({
+        message: "Jenis Layanan tidak valid",
+        error: `Valid options: ${VALID_JENIS_LAYANAN.join(", ")}`,
+        received: jenis_layanan,
+      });
+    }
+
+    // Buat layanan baru
+    const newLayanan = await Layanan.create({
+      nama_layanan: nama_layanan.trim(),
+      deskripsi_layanan: deskripsi_layanan.trim(),
+      jenis_layanan: jenis_layanan.trim(),
     });
-  } catch (error) {}
+
+    res.status(201).json({
+      message: "Berhasil Menambah Layanan",
+      data: newLayanan,
+    });
+  } catch (error: any) {
+    console.error("Error creating layanan:", error);
+
+    // Handle Sequelize validation errors
+    if (error.name === "SequelizeValidationError") {
+      return res.status(400).json({
+        message: "Validation Error",
+        error: error.errors.map((err: any) => ({
+          field: err.path,
+          message: err.message,
+          value: err.value,
+        })),
+      });
+    }
+
+    // Handle Sequelize unique constraint errors
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(400).json({
+        message: "Data sudah exist",
+        error: error.errors.map((err: any) => ({
+          field: err.path,
+          message: err.message,
+          value: err.value,
+        })),
+      });
+    }
+
+    // Handle other Sequelize errors
+    if (error.name && error.name.startsWith("Sequelize")) {
+      return res.status(400).json({
+        message: "Database Error",
+        error: error.message,
+      });
+    }
+
+    // Generic error handler
+    res.status(500).json({
+      message: "Terjadi kesalahan pada server",
+      error: error.message || "Internal server error",
+    });
+  }
 };
 
 // Tambah layanan field
@@ -432,6 +525,49 @@ export const editLayanan: any = async (req: Request, res: Response) => {
       success: true,
       msg: "Layanan berhasil di update",
       data: updateLayanan,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Terjadi kesalahan pada server",
+    });
+  }
+};
+
+export const editUser: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, username, role } = req.body;
+
+    // validasi data
+    if (!id) {
+      return res.status(400).json({
+        msg: "User ID tidak ada",
+      });
+    }
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(400).json({
+        msg: "User tidak terdaftar",
+      });
+    }
+
+    // update user
+    await User.update(
+      {
+        name,
+        username,
+        role,
+      },
+      {
+        where: { id },
+      }
+    );
+    const updateUser = await User.findByPk(id);
+    res.status(200).json({
+      success: true,
+      msg: "User berhasil di update",
+      data: updateUser,
     });
   } catch (error) {
     console.log(error);

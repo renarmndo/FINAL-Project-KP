@@ -3,12 +3,13 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { API_URL } from "../../../auth/authService";
 import { FaSortUp, FaSortDown, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-import { deleteLayanan, editLayanan } from "../../../service/Index";
+import { deleteLayanan } from "../../../service/Index";
 
 export const TambahLayanan = () => {
   const [layananList, setLayananList] = useState([]);
   const [namaLayanan, setNamaLayanan] = useState("");
   const [deskripsiLayanan, setDeskripsiLayanan] = useState("");
+  const [jenisLayanan, setJenisLayanan] = useState("");
   const [loading, setLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [selectedLayananId, setSelectedLayananId] = useState("");
@@ -19,8 +20,6 @@ export const TambahLayanan = () => {
   });
   const [showFieldForm, setShowFieldForm] = useState(false);
   const [loadingField, setLoadingField] = useState(false);
-  // const [namaLayanan, setNamaLayanan] = useState([]);
-  // const [deskripsiLayanan, setDeskripsiLayanan] = useState([]);
 
   useEffect(() => {
     fetchLayanan();
@@ -42,28 +41,46 @@ export const TambahLayanan = () => {
   };
 
   const tambahLayanan = async () => {
+    // Validasi input yang lebih ketat
     if (!namaLayanan.trim()) {
       Swal.fire("Peringatan", "Nama layanan tidak boleh kosong.", "warning");
+      return;
+    }
+
+    if (!jenisLayanan.trim()) {
+      Swal.fire("Peringatan", "Jenis layanan harus dipilih.", "warning");
       return;
     }
 
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+
+      // Data yang akan dikirim
+      const requestData = {
+        nama_layanan: namaLayanan.trim(),
+        deskripsi_layanan: deskripsiLayanan.trim(),
+        jenis_layanan: jenisLayanan.trim(),
+      };
+
+      console.log("Data yang dikirim:", requestData); // Debug log
+
       const res = await axios.post(
         `${API_URL}/leader/create-layanan`,
-        {
-          nama_layanan: namaLayanan,
-          deskripsi_layanan: deskripsiLayanan,
-        },
+        requestData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
+
+      // Reset form setelah berhasil
       setNamaLayanan("");
       setDeskripsiLayanan("");
+      setJenisLayanan("");
+
       fetchLayanan();
       Swal.fire(
         "Berhasil",
@@ -72,8 +89,12 @@ export const TambahLayanan = () => {
       );
     } catch (error) {
       console.error("Gagal menambahkan layanan:", error);
+      console.error("Error response:", error.response?.data); // Debug log
+
       const errorMsg =
-        error?.response?.data?.message || "Gagal menambahkan layanan.";
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Gagal menambahkan layanan.";
       Swal.fire("Error", errorMsg, "error");
     } finally {
       setLoading(false);
@@ -181,8 +202,6 @@ export const TambahLayanan = () => {
     }
   };
 
-  // handle edit layanan
-
   const toggleFieldForm = () => {
     setShowFieldForm(!showFieldForm);
   };
@@ -205,7 +224,7 @@ export const TambahLayanan = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Layanan
+                Nama Layanan <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -226,6 +245,33 @@ export const TambahLayanan = () => {
                 onChange={(e) => setDeskripsiLayanan(e.target.value)}
                 className="p-3 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
               />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Jenis Layanan <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="p-3 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                value={jenisLayanan}
+                onChange={(e) => {
+                  console.log("Jenis layanan dipilih:", e.target.value); // Debug log
+                  setJenisLayanan(e.target.value);
+                }}
+              >
+                <option value="">--Pilih Jenis Layanan--</option>
+                <option value="tagihan">Tagihan</option>
+                <option value="produk">Produk</option>
+                <option value="pelayanan">Pelayanan</option>
+                <option value="jaringan">Jaringan</option>
+                <option value="e-bill">E-Bill</option>
+                <option value="lain-lain">Lain-Lain</option>
+              </select>
+              {/* Indikator value untuk debugging */}
+              {jenisLayanan && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Terpilih: {jenisLayanan}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex justify-end">
@@ -396,6 +442,15 @@ export const TambahLayanan = () => {
                     </th>
                     <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort("jenis_layanan")}
+                    >
+                      <div className="flex items-center">
+                        <span>Jenis Layanan</span>
+                        {getSortIcon("jenis_layanan")}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort("createdAt")}
                     >
                       <div className="flex items-center">
@@ -426,6 +481,11 @@ export const TambahLayanan = () => {
                         {layanan.deskripsi_layanan}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                          {layanan.jenis_layanan}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
                         {new Date(layanan.createdAt).toLocaleDateString(
                           "id-ID"
                         )}
@@ -440,7 +500,7 @@ export const TambahLayanan = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteLayanan(layanan.id)}
-                            className="text-red-600 hover:text-red-8  00 p-1 rounded-full hover:bg-red-100 transition-colors"
+                            className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-100 transition-colors"
                             title="Hapus"
                           >
                             <FaTrash size={18} />

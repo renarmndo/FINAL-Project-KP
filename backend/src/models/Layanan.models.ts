@@ -7,6 +7,7 @@ interface LayananAtributes {
   id: string;
   nama_layanan: string;
   deskripsi_layanan: string;
+  jenis_layanan: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -20,6 +21,7 @@ class Layanan
   public id!: string;
   public nama_layanan!: string;
   public deskripsi_layanan!: string;
+  public jenis_layanan!: string;
   public readonly createdAt?: Date | undefined;
   public readonly updatedAt?: Date | undefined;
 }
@@ -37,6 +39,17 @@ Layanan.init(
     },
     deskripsi_layanan: {
       type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    jenis_layanan: {
+      type: DataTypes.ENUM(
+        "tagihan",
+        "produk",
+        "pelayanan",
+        "jaringan",
+        "e-bill",
+        "lain-lain"
+      ),
       allowNull: false,
     },
   },

@@ -19,6 +19,7 @@ import { TambahUser } from "../../../assets/popup/leader/TambahUser";
 
 // Service
 import { API_URL } from "../../../auth/authService";
+import { editUser } from "../../../service/Index";
 import axios from "axios";
 
 // Style
@@ -33,6 +34,8 @@ export const ListPengguna = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  // Tambahkan state untuk loading update
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const openModalCreate = () => {
     setCreateModalOpen(true);
@@ -71,7 +74,7 @@ export const ListPengguna = () => {
   const refreshData = async () => {
     setRefreshing(true);
     await fetchUsers();
-    setTimeout(() => setRefreshing(false), 500); // Add slight delay for better UX
+    setTimeout(() => setRefreshing(false), 500);
   };
 
   // Delete Data
@@ -110,7 +113,6 @@ export const ListPengguna = () => {
           showConfirmButton: false,
         });
 
-        // refresh data
         fetchUsers();
       } catch (error) {
         if (
@@ -137,35 +139,45 @@ export const ListPengguna = () => {
   };
 
   const handleUserAdded = (newUser) => {
-    // Opsi 1: Refresh semua data dari server (lebih aman)
     fetchUsers();
-
-    // Opsi 2: Tambahkan user baru ke state (lebih cepat)
-    // setUsers(prevUsers => [...prevUsers, newUser]);
   };
 
-  // Handle Update
+  // PERBAIKAN: Handle Update dengan validasi yang lebih baik
   const handleUpdate = async (e) => {
-    e.preventDefault();
-    if (!selectedUser) return;
+    if (e) e.preventDefault();
+    if (!selectedUser) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Data user tidak ditemukan",
+      });
+      return;
+    }
+
+    // Validasi input
+    if (!selectedUser.name || !selectedUser.username || !selectedUser.role) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Semua field harus diisi",
+      });
+      return;
+    }
 
     try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${API_URL}/user/${selectedUser.id}`,
-        {
-          nama: selectedUser.name,
-          username: selectedUser.username,
-          role: selectedUser.role,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      setIsUpdating(true);
+
+      // Log untuk debugging
+      console.log("Updating user:", selectedUser);
+      console.log("API URL:", `${API_URL}/user/${selectedUser.id}`);
+
+      const response = await editUser(selectedUser.id, {
+        name: selectedUser.name,
+        username: selectedUser.username,
+        role: selectedUser.role,
+      });
+
+      console.log("Update response:", response.data);
 
       Swal.fire({
         icon: "success",
@@ -175,28 +187,58 @@ export const ListPengguna = () => {
         showConfirmButton: false,
       });
 
-      // Refresh data
-      fetchUsers();
+      // Refresh data dan tutup modal
+      await fetchUsers();
       closeModal();
     } catch (error) {
-      console.log(error);
+      console.error("Update error:", error);
+
+      let errorMessage = "Terjadi kesalahan saat update user.";
+
+      // Handle specific error messages
+      if (error.response) {
+        console.log("Error response:", error.response.data);
+        if (error.response.status === 400) {
+          errorMessage = "Data yang dikirim tidak valid";
+        } else if (error.response.status === 401) {
+          errorMessage = "Token tidak valid, silakan login ulang";
+        } else if (error.response.status === 404) {
+          errorMessage = "User tidak ditemukan";
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Terjadi kesalahan saat update user.",
+        text: errorMessage,
       });
     } finally {
-      setLoading(false);
+      setIsUpdating(false);
     }
   };
 
-  // Handle input
+  // PERBAIKAN: Handle input change dengan validasi
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSelectedUser({
-      ...selectedUser,
+
+    // Validasi input
+    if (name === "username" && value.includes(" ")) {
+      Swal.fire({
+        icon: "warning",
+        title: "Peringatan",
+        text: "Username tidak boleh mengandung spasi",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    setSelectedUser((prevUser) => ({
+      ...prevUser,
       [name]: value,
-    });
+    }));
   };
 
   // Filter Data
@@ -209,9 +251,16 @@ export const ListPengguna = () => {
     return roleMatch && searchMatch;
   });
 
-  // Function to open edit modal
+  // PERBAIKAN: Function to open edit modal dengan deep copy
   const openEditModal = (user) => {
-    setSelectedUser({ ...user });
+    console.log("Opening edit modal for user:", user);
+    setSelectedUser({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      role: user.role,
+      createdAt: user.createdAt,
+    });
     setModalOpen(true);
   };
 
@@ -219,6 +268,7 @@ export const ListPengguna = () => {
   const closeModal = () => {
     setModalOpen(false);
     setSelectedUser(null);
+    setIsUpdating(false);
   };
 
   // Get role badge color
@@ -533,8 +583,8 @@ export const ListPengguna = () => {
         </main>
       </div>
 
-      {/* Edit Modal */}
-      {isModalOpen && (
+      {/* PERBAIKAN: Edit Modal dengan validasi yang lebih baik */}
+      {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
           {/* Background overlay with blur effect */}
           <div
@@ -554,6 +604,7 @@ export const ListPengguna = () => {
               <button
                 onClick={closeModal}
                 className="text-white hover:text-red-100 rounded-full p-1 hover:bg-red-700/50 transition-colors"
+                disabled={isUpdating}
               >
                 <X size={20} />
               </button>
@@ -561,71 +612,75 @@ export const ListPengguna = () => {
 
             {/* Body */}
             <div className="px-6 pt-6 pb-4">
-              {selectedUser && (
-                <form onSubmit={handleUpdate}>
-                  <div className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Nama
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={selectedUser.name || ""}
+              <form onSubmit={handleUpdate}>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Nama *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={selectedUser.name || ""}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                      required
+                      disabled={isUpdating}
+                      placeholder="Masukkan nama lengkap"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="username"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Username *
+                    </label>
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      value={selectedUser.username || ""}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                      required
+                      disabled={isUpdating}
+                      placeholder="Masukkan username"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="role"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Role *
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="role"
+                        name="role"
+                        value={selectedUser.role || ""}
                         onChange={handleInputChange}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors appearance-none"
                         required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="username"
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                        disabled={isUpdating}
                       >
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        value={selectedUser.username || ""}
-                        onChange={handleInputChange}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="role"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Role
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="role"
-                          name="role"
-                          value={selectedUser.role || ""}
-                          onChange={handleInputChange}
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors appearance-none"
-                          required
-                        >
-                          <option value="leader">Leader</option>
-                          <option value="team_fu">Team FU</option>
-                          <option value="agent">Agent</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <ChevronDown size={18} className="text-gray-400" />
-                        </div>
+                        <option value="">Pilih Role</option>
+                        <option value="leader">Leader</option>
+                        <option value="team_fu">Team FU</option>
+                        <option value="agent">Agent</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <ChevronDown size={18} className="text-gray-400" />
                       </div>
                     </div>
                   </div>
-                </form>
-              )}
+                </div>
+              </form>
             </div>
 
             {/* Footer */}
@@ -634,17 +689,22 @@ export const ListPengguna = () => {
                 type="button"
                 onClick={closeModal}
                 className="w-full sm:w-auto inline-flex justify-center items-center rounded-lg border border-gray-300 px-5 py-2.5 bg-white text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
-                disabled={loading}
+                disabled={isUpdating}
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleUpdate}
-                className="w-full sm:w-auto inline-flex justify-center items-center rounded-lg px-5 py-2.5 bg-red-600 text-white font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-sm"
-                disabled={loading}
+                className="w-full sm:w-auto inline-flex justify-center items-center rounded-lg px-5 py-2.5 bg-red-600 text-white font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={
+                  isUpdating ||
+                  !selectedUser.name ||
+                  !selectedUser.username ||
+                  !selectedUser.role
+                }
               >
-                {loading ? (
+                {isUpdating ? (
                   <span className="flex items-center">
                     <svg
                       className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"

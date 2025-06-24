@@ -112,3 +112,18 @@ export const deleteLayanan = async (id) => {
     throw error;
   }
 };
+
+export const editUser = async (id, data) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.patch(`${API_URL}/leader/user/${id}/edit`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

@@ -15,6 +15,15 @@ import {
   AlertCircle,
   Clock,
   Zap,
+  MessageSquareMore,
+
+  // jenis layanan
+  CreditCard,
+  Package,
+  HeadphonesIcon,
+  Wifi,
+  Receipt,
+  Wrench,
 } from "lucide-react";
 
 const TambahDataKomplain = () => {
@@ -34,6 +43,50 @@ const TambahDataKomplain = () => {
     priority: "medium",
     fields: {},
   });
+
+  // fungsi layanan icon
+  const getServiceIcon = (namaLayanan) => {
+    const layananLower = namaLayanan.toLowerCase();
+    if (
+      layananLower.includes("jaringan") ||
+      layananLower.includes("internet") ||
+      layananLower.includes("wifi")
+    ) {
+      return Wifi;
+    } else if (
+      layananLower.includes("tagihan") ||
+      layananLower.includes("bill") ||
+      layananLower.includes("pembayaran")
+    ) {
+      return Receipt;
+    } else if (
+      layananLower.includes("e-bill") ||
+      layananLower.includes("ebill") ||
+      layananLower.includes("electronic bill")
+    ) {
+      return CreditCard;
+    } else if (
+      layananLower.includes("produk") ||
+      layananLower.includes("product")
+    ) {
+      return Package;
+    } else if (
+      layananLower.includes("pelayanan") ||
+      layananLower.includes("service") ||
+      layananLower.includes("support")
+    ) {
+      return Wrench;
+    } else if (
+      layananLower.includes("lain") ||
+      layananLower.includes("other") ||
+      layananLower.includes("umum")
+    ) {
+      return HeadphonesIcon;
+    } else {
+      // Default icon jika tidak cocok dengan kategori manapun
+      return Settings;
+    }
+  };
 
   // Mengambil data layanan saat komponen dimuat
   useEffect(() => {
@@ -258,48 +311,54 @@ const TambahDataKomplain = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {layananList.map((layanan) => (
-          <div
-            key={layanan.id}
-            onClick={() => handleLayananClick(layanan)}
-            className="group relative bg-white border border-gray-200 hover:border-red-300 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
-          >
-            {/* Background gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        {layananList.map((layanan) => {
+          // Dapatkan icon yang sesuai dengan jenis layanan
+          const ServiceIcon = getServiceIcon(layanan.nama_layanan);
 
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-shrink-0">
-                  <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 group-hover:from-red-600 group-hover:to-red-700 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg">
-                    <Building2 className="w-7 h-7 text-white" />
+          return (
+            <div
+              key={layanan.id}
+              onClick={() => handleLayananClick(layanan)}
+              className="group relative bg-white border border-gray-200 hover:border-red-300 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+            >
+              {/* Background gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 group-hover:from-red-600 group-hover:to-red-700 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg">
+                      {/* Dynamic Icon berdasarkan jenis layanan */}
+                      <ServiceIcon className="w-7 h-7 text-white" />
+                    </div>
+                  </div>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                      <ArrowLeft className="w-4 h-4 text-red-600 rotate-180" />
+                    </div>
                   </div>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                    <ArrowLeft className="w-4 h-4 text-red-600 rotate-180" />
+
+                <h3 className="text-md font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors line-clamp-2">
+                  {layanan.nama_layanan}
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+                  {layanan.deskripsi_layanan}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 group-hover:bg-red-100 transition-colors">
+                    <Zap className="w-3 h-3 mr-1" />
+                    Pilih Layanan
+                  </span>
+                  <div className="text-xs text-gray-400 group-hover:text-red-400 transition-colors">
+                    Klik untuk lanjut →
                   </div>
-                </div>
-              </div>
-
-              <h3 className="text-md font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors line-clamp-2">
-                {layanan.nama_layanan}
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
-                {layanan.deskripsi_layanan}
-              </p>
-
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 group-hover:bg-red-100 transition-colors">
-                  <Zap className="w-3 h-3 mr-1" />
-                  Pilih Layanan
-                </span>
-                <div className="text-xs text-gray-400 group-hover:text-red-400 transition-colors">
-                  Klik untuk lanjut →
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {layananList.length === 0 && !loading && (
@@ -489,7 +548,7 @@ const TambahDataKomplain = () => {
             </div>
             <div className="space-y-2">
               <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                <MapPin className="w-4 h-4 mr-2 text-red-600" />
+                <MessageSquareMore className="w-4 h-4 mr-2 text-red-600" />
                 Deskripsi Komplain
               </label>
               <textarea

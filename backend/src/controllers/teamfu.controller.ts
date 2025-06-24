@@ -74,44 +74,67 @@ export const responseKomplain: any = async (req: Request, res: Response) => {
 
     const komplain = await Komplain.findByPk(komplainId);
 
-    // jika komplain sudah di response
     if (!komplain) {
       return res.status(404).json({
         msg: "Komplain Not Found",
       });
     }
 
+    // Cek apakah komplain sudah completed (tidak bisa diresponse lagi)
     if (komplain.status === "completed") {
       return res.status(400).json({
-        msg: "Komplain ini sudah diresponse oleh Team Fu",
+        msg: "Komplain ini sudah diresponse oleh Team",
       });
-    } else {
-      const newResponse = await ResponseKomplain.create({
+    }
+
+    const existingResponse = await ResponseKomplain.findOne({
+      where: {
         komplainId,
-        handlerId: handlerId,
+      },
+    });
+
+    let responseData;
+
+    if (existingResponse) {
+      // Update existing response (baik yang rejected maupun yang lain)
+      await existingResponse.update({
+        handlerId,
         jawaban,
         catatanInternal,
         status: "completed",
       });
-
-      const [updated] = await Komplain.update(
-        { status: "completed", handlerId: handlerId },
-        {
-          where: {
-            id: komplainId,
-          },
-        }
-      );
-      if (updated === 0) {
-        return res.status(404).json({
-          msg: "Komplain Not Found",
-        });
-      }
-      return res.status(200).json({
-        msg: "Berhasil menambahkan response",
-        data: newResponse,
+      responseData = existingResponse;
+    } else {
+      // Buat response baru jika belum ada
+      responseData = await ResponseKomplain.create({
+        komplainId,
+        handlerId,
+        jawaban,
+        catatanInternal,
+        status: "completed",
       });
     }
+
+    // Update status komplain menjadi completed
+    const [updated] = await Komplain.update(
+      { status: "completed", handlerId: handlerId },
+      {
+        where: {
+          id: komplainId,
+        },
+      }
+    );
+
+    if (updated === 0) {
+      return res.status(404).json({
+        msg: "Komplain Not Found",
+      });
+    }
+
+    return res.status(200).json({
+      msg: "Berhasil menambahkan response",
+      data: responseData,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({

@@ -8,6 +8,7 @@ import {
   reportKomplainCsv,
   deleteLayanan,
   editLayanan,
+  editUser,
 } from "../controllers/Leader.controller";
 import { createFieldLayanan } from "../controllers/Leader.controller";
 
@@ -38,5 +39,8 @@ router.delete("/layanan/:id/delete", authorized("leader"), deleteLayanan);
 
 // edit layanan
 router.patch("/layanan/:id/edit", authorized("leader"), editLayanan);
+
+// edit user
+router.patch("/user/:id/edit", authorized("leader"), editUser);
 
 export default router;
